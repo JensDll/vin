@@ -1,0 +1,31 @@
+function(CPMAddPackage)
+  set(options)
+  set(
+    single_value_args
+    NAME
+    FORCE
+    VERSION
+    GIT_TAG
+    DOWNLOAD_ONLY
+    GITHUB_REPOSITORY
+    GITLAB_REPOSITORY
+    BITBUCKET_REPOSITORY
+    GIT_REPOSITORY
+    SOURCE_DIR
+    FIND_PACKAGE_ARGUMENTS
+    NO_CACHE
+    SYSTEM
+    GIT_SHALLOW
+    EXCLUDE_FROM_ALL
+    SOURCE_SUBDIR
+    CUSTOM_CACHE_KEY
+  )
+  set(
+    multi_value_args
+    URL
+    OPTIONS
+    DOWNLOAD_COMMAND
+    PATCHES
+  )
+  cmake_parse_arguments(PARSE_ARGV 0 "" "${options}" "${single_value_args}" "${multi_value_args}")
+endfunction()

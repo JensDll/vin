@@ -1,0 +1,7 @@
+if(@VIN_BUILD_PEEL@)
+  execute_process(@install_peel@)
+endif()
+
+if(@VIN_BUILD_GTK4_LAYER_SHELL@)
+  execute_process(@install_gtk4_layer_shell@)
+endif()

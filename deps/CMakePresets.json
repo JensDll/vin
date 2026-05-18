@@ -1,0 +1,43 @@
+{
+  "version": 10,
+  "configurePresets": [
+    {
+      "name": "conf_base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "VIN_BUILD_PEEL": true,
+        "VIN_BUILD_FMT": true,
+        "VIN_BUILD_SPDLOG": true,
+        "VIN_BUILD_GTK4_LAYER_SHELL": true,
+        "VIN_BUILD_JSON": true
+      }
+    },
+    {
+      "name": "debug",
+      "inherits": "conf_base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "inherits": "conf_base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    }
+  ]
+}

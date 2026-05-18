@@ -1,0 +1,16 @@
+out/
+.*/
+coverage/
+snapshots/
+tmp/
+
+*log
+*.so
+*.o
+*.lldb
+*.lst
+*.received.txt
+*.profdata
+
+compile_commands.json
+lldbdash.json

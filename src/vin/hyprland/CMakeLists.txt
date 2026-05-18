@@ -1,0 +1,20 @@
+add_library(
+  vin.hyprland
+  STATIC
+  event_listener.cpp
+  workspaces.cpp
+  button.cpp
+  event_parser.cpp
+  command.cpp
+  workspace_button.cpp
+)
+add_library(vin::hyprland ALIAS vin.hyprland)
+target_link_libraries(
+  vin.hyprland
+  PRIVATE
+    vin::options
+    vin::deps::json
+    vin::deps::spdlog
+    vin::deps::peel
+    vin::deps::gtk4
+)

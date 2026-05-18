@@ -1,0 +1,76 @@
+{
+  "version": 10,
+  "configurePresets": [
+    {
+      "name": "conf_base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+        "CMAKE_CXX_SCAN_FOR_MODULES": false,
+        "CMAKE_PREFIX_PATH": "${sourceDir}/deps/out/install/debug",
+        "VIN_ENABLE_CCACHE": true
+      }
+    },
+    {
+      "name": "debug",
+      "inherits": "conf_base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_LINKER_TYPE": "LLD"
+      }
+    },
+    {
+      "name": "debug-gcc",
+      "inherits": "conf_base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "analyze",
+      "inherits": "conf_base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_LINKER_TYPE": "LLD",
+        "VIN_ENABLE_CLANG_TIDY": true,
+        "VIN_ENABLE_SANITIZER_ADDRESS": true,
+        "VIN_ENABLE_SANITIZER_UNDEFINED": true,
+        "VIN_ENABLE_COVERAGE": true
+      }
+    },
+    {
+      "name": "release",
+      "inherits": "conf_base",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_PREFIX_PATH": "${sourceDir}/deps/out/install/release",
+        "VIN_ENABLE_LTO": true
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "debug-gcc",
+      "configurePreset": "debug-gcc"
+    },
+    {
+      "name": "analyze",
+      "configurePreset": "analyze"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    }
+  ]
+}
