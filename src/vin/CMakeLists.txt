@@ -21,12 +21,3 @@ target_link_libraries(
     vin::deps::gtk
     vin::deps::gtk_layer_shell
 )
-
-add_executable(test_main test_main.cpp)
-
-target_link_libraries(
-  test_main
-  PRIVATE
-    vin::options
-    vin::deps::fmt
-)
