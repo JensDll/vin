@@ -1,9 +1,7 @@
-#include "vin/vin.hpp"
+#include "vin/application.hpp"
 
-#include <cstddef>
-
-int main(const int argc, const char* argv[])
+int main(const int argc, char* argv[])
 {
-  const auto vin{ vin::Vin::create() };
-  return vin->run({ argv, static_cast<std::size_t>(argc) });
+  const auto app{ vin::Application::create() };
+  return app->run(argc, argv);
 }

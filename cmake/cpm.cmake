@@ -23,4 +23,4 @@ if(NOT EXISTS ${location})
   )
 endif()
 
-include(${location})
+include("${location}")

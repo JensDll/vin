@@ -11,6 +11,7 @@ tmp/
 *.lst
 *.received.txt
 *.profdata
+*.profraw
 
 compile_commands.json
 lldbdash.json

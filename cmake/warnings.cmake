@@ -6,6 +6,7 @@ function(configure_warnings target)
     -Wall
     -Wextra
     -Wshadow
+    $<$<CXX_COMPILER_ID:Clang>:-Wshadow-uncaptured-local>
     -Wnon-virtual-dtor
     -Wold-style-cast
     -Wcast-align
@@ -19,15 +20,11 @@ function(configure_warnings target)
     -Wformat=2
     -Wimplicit-fallthrough
     -Wno-cast-function-type
-    $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-designated-field-initializers>
-    $<$<CXX_COMPILER_ID:GNU>:-Wmisleading-indentation>
+    -Wmisleading-indentation
     $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-cond>
     $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
     $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
     $<$<CXX_COMPILER_ID:GNU>:-Wuseless-cast>
-    $<$<CXX_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
-    $<$<CXX_COMPILER_ID:GNU>:-Wno-maybe-uninitialized>
-    $<$<CXX_COMPILER_ID:GNU>:-Wno-return-type>
     $<$<BOOL:${CMAKE_COMPILE_WARNING_AS_ERROR}>:-Werror>
   )
 

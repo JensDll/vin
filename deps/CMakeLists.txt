@@ -27,15 +27,15 @@ if(VIN_BUILD_PEEL)
   CPMAddPackage(
     NAME peel
     GIT_REPOSITORY https://gitlab.gnome.org/bugaevc/peel.git
-    GIT_TAG 986a798be46acc1fed18ea7043143d4d9038c0ab
+    GIT_TAG f3b3b300e0f83013553b54125e23b8e53f555dba
     GIT_SHALLOW ON
     DOWNLOAD_ONLY ON
   )
 
   ExternalProject_Add(
     peel
-    SOURCE_DIR ${peel_SOURCE_DIR}
-    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+    SOURCE_DIR "${peel_SOURCE_DIR}"
+    INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
     CONFIGURE_COMMAND
       ${MESON_EXE} setup <BINARY_DIR> <SOURCE_DIR> --prefix <INSTALL_DIR> --buildtype
       ${meson_build_type}
@@ -64,8 +64,8 @@ if(VIN_BUILD_GTK4_LAYER_SHELL)
 
   ExternalProject_Add(
     gtk4_layer_shell
-    SOURCE_DIR ${gtk4_layer_shell_SOURCE_DIR}
-    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+    SOURCE_DIR "${gtk4_layer_shell_SOURCE_DIR}"
+    INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
     CONFIGURE_COMMAND
       ${MESON_EXE} setup <BINARY_DIR> <SOURCE_DIR> --prefix <INSTALL_DIR> --buildtype
       ${meson_build_type} -D vapi=false
@@ -89,7 +89,7 @@ if(VIN_BUILD_FMT)
   CPMAddPackage(
     NAME fmt
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-    GIT_TAG 407c905e45ad75fc29bf0f9bb7c5c2fd3475976f
+    GIT_TAG 2f18a88e68af42bdda0e5210f80fac07ae756bd6
     GIT_SHALLOW ON
     OPTIONS
       "FMT_INSTALL ON"
@@ -112,8 +112,7 @@ if(VIN_BUILD_JSON)
   CPMAddPackage(
     NAME json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG a0a4e7cc0b2bab727b2b6e7505a52b0e7e38f063
-    GIT_SHALLOW ON
+    GIT_TAG 1d7688aef2e7b6f9d11644702f8ce7533aa1fb20
     OPTIONS
       "JSON_Install ON"
   )

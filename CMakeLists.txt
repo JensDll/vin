@@ -28,7 +28,7 @@ target_compile_definitions(
     $<$<BOOL:${BUILD_TESTING}>:VIN_BUILD_TESTING>
     JSON_BRACE_INIT_COPY_SEMANTICS
 )
-target_sources(vin.options PUBLIC FILE_SET HEADERS BASE_DIRS ${project_root}/src)
+target_sources(vin.options PUBLIC FILE_SET HEADERS BASE_DIRS "${project_root}/src")
 
 configure_warnings(vin.options)
 

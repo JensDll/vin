@@ -1,0 +1,19 @@
+add_library(
+  vin.lib
+  STATIC
+  hyprland_command.cpp
+  hyprland_event_listener.cpp
+  hyprland_workspace.cpp
+  hyprland_workspace_list_model.cpp
+  ipositionable.cpp
+  iconfigurable.cpp
+)
+add_library(vin::lib ALIAS vin.lib)
+target_link_libraries(
+  vin.lib
+  PRIVATE
+    vin::options
+    vin::deps::spdlog
+    vin::deps::peel
+    vin::deps::gio
+)

@@ -1,27 +1,32 @@
-add_subdirectory(hyprland)
+add_subdirectory(lib)
+add_subdirectory(module)
 
 add_executable(
   vin
+  config.cpp
   main.cpp
-  vin.cpp
+  application.cpp
+  window.cpp
 )
+
 target_link_libraries(
   vin
   PRIVATE
     vin::options
-    vin::hyprland
-    vin::deps::json
+    vin::module
+    vin::lib
+    vin::deps::lua
     vin::deps::spdlog
     vin::deps::peel
-    vin::deps::gtk4
-    vin::deps::gtk4_layer_shell
+    vin::deps::gtk
+    vin::deps::gtk_layer_shell
 )
 
 add_executable(test_main test_main.cpp)
+
 target_link_libraries(
   test_main
   PRIVATE
     vin::options
-    vin::deps::json
-    vin::deps::spdlog
+    vin::deps::fmt
 )
