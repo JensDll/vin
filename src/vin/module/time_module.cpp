@@ -1,4 +1,5 @@
 #include "vin/lib/iconfigurable.hpp"
+#include "vin/lib/ipositionable.hpp"
 #include "vin/module/time_module.hpp"
 
 #include <fmt/args.h>
@@ -29,7 +30,17 @@ using namespace peel;
 
 PEEL_CLASS_IMPL(TimeModule, "VinTimeModule", Gtk::Box)
 
-void TimeModule::Class::init() {}
+void TimeModule::Class::init()
+{
+  override_vfunc_dispose<TimeModule>();
+}
+
+void TimeModule::vfunc_dispose()
+{
+  m_timeout->destroy();
+  m_timeout = nullptr;
+  parent_vfunc_dispose<TimeModule>();
+}
 
 void TimeModule::init_type(const Type type)
 {
@@ -86,65 +97,48 @@ void TimeModule::init([[maybe_unused]] Class* const cls)
   update_format("{:%H:%M}", "{:%d/%m/%y}");
 
   auto time_label{ Gtk::Label::create(nullptr) };
-  auto date_label{ Gtk::Label::create(nullptr) };
-
-  time_label->set_yalign(1);
   time_label->set_name("time-label");
-
-  date_label->set_yalign(0);
-  date_label->set_name("date-label");
-
   m_time_label = time_label;
+
+  auto date_label{ Gtk::Label::create(nullptr) };
+  date_label->set_name("date-label");
   m_date_label = date_label;
 
-  const auto timeout{ GLib::timeout_source_new(500) };
+  m_timeout = GLib::timeout_source_new(500);
 
-  timeout->set_callback([this]() {
+  m_timeout->set_callback([this]() {
     update_time();
     m_time_label->set_label(m_time);
     m_date_label->set_label(m_date);
     return G_SOURCE_CONTINUE;
   });
 
-  timeout->attach(m_worker_context);
+  m_timeout->attach(m_worker_context);
 
   append(std::move(time_label));
   append(std::move(date_label));
 
   set_name("time-module");
-  set_homogeneous(true);
 }
 
 void TimeModule::vfunc_position(const lib::Position position)
 {
   switch (position) {
   case lib::Position::top:
-    remove_css_class("top");
-    remove_css_class("left");
-    remove_css_class("right");
-    remove_css_class("bottom");
-    add_css_class("top");
+    cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
+    lib::add_position_css_class<lib::Position::top>(this);
     break;
   case lib::Position::left:
-    remove_css_class("top");
-    remove_css_class("left");
-    remove_css_class("right");
-    remove_css_class("bottom");
-    add_css_class("left");
+    cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
+    lib::add_position_css_class<lib::Position::left>(this);
     break;
   case lib::Position::right:
-    remove_css_class("top");
-    remove_css_class("left");
-    remove_css_class("right");
-    remove_css_class("bottom");
-    add_css_class("right");
+    cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
+    lib::add_position_css_class<lib::Position::right>(this);
     break;
   case lib::Position::bottom:
-    remove_css_class("top");
-    remove_css_class("left");
-    remove_css_class("right");
-    remove_css_class("bottom");
-    add_css_class("bottom");
+    cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
+    lib::add_position_css_class<lib::Position::bottom>(this);
     break;
   }
 }
@@ -152,31 +146,29 @@ void TimeModule::vfunc_position(const lib::Position position)
 int TimeModule::vin_time_module(lua_State* const L)
 {
   if (lua_gettop(L) != 1) {
-    luaL_error(L, "invalid number of arguments, expected 1 but got %d", lua_gettop(L));
-    return 0;
+    return luaL_error(L, "invalid number of arguments, expected 1 but got %d", lua_gettop(L));
   }
 
-  if (!lua_istable(L, -1)) {
-    luaL_error(L, "invalid first argument, expected table but got %s", lua_typename(L, lua_type(L, -1)));
-    return 0;
+  if (!lua_istable(L, 1)) {
+    return luaL_error(L, "invalid first argument, expected table but got %s", lua_typename(L, lua_type(L, -1)));
   }
 
   auto* const module{ static_cast<TimeModule*>(lua_touserdata(L, lua_upvalueindex(1))) };
 
-  lua_getfield(L, -1, "time_format");
-  lua_getfield(L, -2, "date_format");
+  lua_getfield(L, 1, "time_format");
+  lua_getfield(L, 1, "date_format");
 
   std::string_view time_format{ module->m_buffer.data(), module->m_date_format };
   std::string_view date_format{ module->m_date_format, module->m_time };
 
   std::size_t size{};
 
-  if (lua_isstring(L, -2) != 0) {
+  if (lua_isstring(L, 2) != 0) {
     const char* data{ lua_tolstring(L, -2, &size) };
     time_format = { data, size };
   }
 
-  if (lua_isstring(L, -1) != 0) {
+  if (lua_isstring(L, 3) != 0) {
     const char* data{ lua_tolstring(L, -1, &size) };
     date_format = { data, size };
   }

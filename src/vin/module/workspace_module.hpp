@@ -21,6 +21,7 @@ namespace vin::module {
 
 class WorkspaceModule final : public peel::Gtk::Box
 {
+private:
   PEEL_SIMPLE_CLASS(WorkspaceModule, Box)
 
   friend class peel::Gtk::Box;

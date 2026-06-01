@@ -6,6 +6,7 @@
 #include <peel/GObject/ParamFlags.h>
 #include <peel/class.h>
 #include <peel/GLib/MainContext.h>
+#include <peel/GLib/Source.h>
 #include <peel/Gtk/Box.h>
 #include <peel/Gtk/Label.h>
 #include <peel/Gtk/Orientable.h>
@@ -44,6 +45,8 @@ private:
   peel::Gtk::Label* m_time_label;
   peel::Gtk::Label* m_date_label;
 
+  peel::RefPtr<peel::GLib::Source> m_timeout;
+
 public:
   ~TimeModule() = default;
 
@@ -67,6 +70,8 @@ private:
   static void init_interface(lib::IPositionable::Iface* iface);
 
   static void init_interface(lib::IConfigurable::Iface* iface);
+
+  void vfunc_dispose();
 
   void update_time();
 

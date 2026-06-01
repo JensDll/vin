@@ -5,7 +5,9 @@
 #include "vin/window.hpp"
 
 #include <peel/class.h>
+#include <peel/Gtk/Align.h>
 #include <peel/Gtk/ApplicationWindow.h>
+#include <peel/Gtk/Box.h>
 #include <peel/Gtk/CenterBox.h>
 #include <peel/Gtk/Orientation.h>
 #include <peel/Gtk/Widget.h>
@@ -35,14 +37,17 @@ void Window::init([[maybe_unused]] Class* const cls)
 
   auto left_box{ Gtk::Box::create(Gtk::Orientation::HORIZONTAL, 0) };
   left_box->set_name("left-box");
+  left_box->set_valign(Gtk::Align::CENTER);
   m_left_box = left_box;
 
   auto center_box{ Gtk::Box::create(Gtk::Orientation::HORIZONTAL, 0) };
   center_box->set_name("center-box");
+  center_box->set_valign(Gtk::Align::CENTER);
   m_center_box = center_box;
 
   auto right_box{ Gtk::Box::create(Gtk::Orientation::HORIZONTAL, 0) };
   right_box->set_name("right-box");
+  right_box->set_valign(Gtk::Align::CENTER);
   m_right_box = right_box;
 
   auto workspace_module{ module::WorkspaceModule::create() };
@@ -52,8 +57,6 @@ void Window::init([[maybe_unused]] Class* const cls)
   auto time_module{ module::TimeModule::create(m_main_context, m_worker_context) };
   m_right_modules.push_back(time_module);
   right_box->append(std::move(time_module));
-
-  vfunc_position(lib::Position::bottom);
 
   layout->set_start_widget(std::move(left_box));
   layout->set_center_widget(std::move(center_box));
@@ -95,15 +98,15 @@ void configure_widgets(const std::span<Gtk::Widget*> widgets, lua_State* const L
   }
 }
 
-template<Gtk::Orientation Orientation>
-void position_box(Gtk::Widget* const box, const char* const css_class)
+template<lib::Position P>
+void position_box(Gtk::Widget* const box)
 {
-  box->cast<Gtk::Orientable>()->set_orientation(Orientation);
-  box->remove_css_class("top");
-  box->remove_css_class("left");
-  box->remove_css_class("right");
-  box->remove_css_class("bottom");
-  box->add_css_class(css_class);
+  if constexpr (P == lib::Position::top || P == lib::Position::bottom) {
+    box->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
+  } else {
+    box->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
+  }
+  lib::add_position_css_class<lib::Position::top>(box);
 }
 
 } // namespace
@@ -117,12 +120,13 @@ void Window::vfunc_position(const lib::Position position)
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::RIGHT, true);
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::BOTTOM, false);
     m_layout->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
-    position_box<Gtk::Orientation::HORIZONTAL>(m_left_box, "top");
-    position_box<Gtk::Orientation::HORIZONTAL>(m_center_box, "top");
-    position_box<Gtk::Orientation::HORIZONTAL>(m_right_box, "top");
+    position_box<lib::Position::top>(m_left_box);
+    position_box<lib::Position::top>(m_center_box);
+    position_box<lib::Position::top>(m_right_box);
     position_widgets<lib::Position::top>(m_left_modules);
     position_widgets<lib::Position::top>(m_center_modules);
     position_widgets<lib::Position::top>(m_right_modules);
+    lib::add_position_css_class<lib::Position::top>(this);
     break;
   case lib::Position::left:
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::TOP, true);
@@ -130,12 +134,13 @@ void Window::vfunc_position(const lib::Position position)
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::RIGHT, false);
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::BOTTOM, true);
     m_layout->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
-    position_box<Gtk::Orientation::VERTICAL>(m_left_box, "left");
-    position_box<Gtk::Orientation::VERTICAL>(m_center_box, "left");
-    position_box<Gtk::Orientation::VERTICAL>(m_right_box, "left");
+    position_box<lib::Position::left>(m_left_box);
+    position_box<lib::Position::left>(m_center_box);
+    position_box<lib::Position::left>(m_right_box);
     position_widgets<lib::Position::left>(m_left_modules);
     position_widgets<lib::Position::left>(m_center_modules);
     position_widgets<lib::Position::left>(m_right_modules);
+    lib::add_position_css_class<lib::Position::left>(this);
     break;
   case lib::Position::right:
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::TOP, true);
@@ -143,12 +148,13 @@ void Window::vfunc_position(const lib::Position position)
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::RIGHT, true);
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::BOTTOM, true);
     m_layout->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
-    position_box<Gtk::Orientation::VERTICAL>(m_left_box, "right");
-    position_box<Gtk::Orientation::VERTICAL>(m_center_box, "right");
-    position_box<Gtk::Orientation::VERTICAL>(m_right_box, "right");
+    position_box<lib::Position::right>(m_left_box);
+    position_box<lib::Position::right>(m_center_box);
+    position_box<lib::Position::right>(m_right_box);
     position_widgets<lib::Position::right>(m_left_modules);
     position_widgets<lib::Position::right>(m_center_modules);
     position_widgets<lib::Position::right>(m_right_modules);
+    lib::add_position_css_class<lib::Position::right>(this);
     break;
   case lib::Position::bottom:
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::TOP, false);
@@ -156,12 +162,13 @@ void Window::vfunc_position(const lib::Position position)
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::RIGHT, true);
     Gtk4LayerShell::set_anchor(this, Gtk4LayerShell::Edge::BOTTOM, true);
     m_layout->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
-    position_box<Gtk::Orientation::HORIZONTAL>(m_left_box, "bottom");
-    position_box<Gtk::Orientation::HORIZONTAL>(m_center_box, "bottom");
-    position_box<Gtk::Orientation::HORIZONTAL>(m_right_box, "bottom");
+    position_box<lib::Position::bottom>(m_left_box);
+    position_box<lib::Position::bottom>(m_center_box);
+    position_box<lib::Position::bottom>(m_right_box);
     position_widgets<lib::Position::bottom>(m_left_modules);
     position_widgets<lib::Position::bottom>(m_center_modules);
     position_widgets<lib::Position::bottom>(m_right_modules);
+    lib::add_position_css_class<lib::Position::bottom>(this);
     break;
   }
 }
@@ -169,46 +176,75 @@ void Window::vfunc_position(const lib::Position position)
 int Window::vin_window(lua_State* const L)
 {
   if (lua_gettop(L) != 1) {
-    luaL_error(L, "invalid number of arguments, expected 1 but got %d", lua_gettop(L));
-    return 0;
+    return luaL_error(L, "invalid number of arguments, expected 1 but got %d", lua_gettop(L));
   }
 
-  if (!lua_istable(L, -1)) {
-    luaL_error(L, "invalid first argument, expected table but got %s", lua_typename(L, lua_type(L, -1)));
-    return 0;
+  if (!lua_istable(L, 1)) {
+    return luaL_error(L, "invalid first argument, expected table but got %s", lua_typename(L, lua_type(L, -1)));
   }
 
   auto* const window{ static_cast<Window*>(lua_touserdata(L, lua_upvalueindex(1))) };
 
-  lua_getfield(L, -1, "position");
-
-  if (lua_isinteger(L, -1) != 0) {
-    window->vfunc_position(static_cast<lib::Position>(lua_tointeger(L, -1)));
+  lua_getfield(L, 1, "position");
+  if (lua_isinteger(L, 2) != 0) {
+    window->vfunc_position(static_cast<lib::Position>(lua_tointeger(L, 2)));
   }
-
   lua_pop(L, 1);
 
-  lua_getfield(L, -1, "auto_exclusive");
-
-  if (lua_isboolean(L, -1) != 0) {
-    if (lua_toboolean(L, -1) != 0) {
+  lua_getfield(L, 1, "auto_exclusive");
+  if (lua_isboolean(L, 2) != 0) {
+    if (lua_toboolean(L, 2) != 0) {
       Gtk4LayerShell::auto_exclusive_zone_enable(window);
     } else {
       Gtk4LayerShell::set_exclusive_zone(window, 0);
     }
   }
-
   lua_pop(L, 1);
+
+  lua_getfield(L, 1, "margin");
+  if (lua_istable(L, 2) != 0) {
+    lua_getfield(L, 2, "top");
+    lua_getfield(L, 2, "left");
+    lua_getfield(L, 2, "right");
+    lua_getfield(L, 2, "bottom");
+    if (lua_isinteger(L, 3) != 0) {
+      Gtk4LayerShell::set_margin(window, Gtk4LayerShell::Edge::TOP, lua_tointeger(L, 3));
+    }
+    if (lua_isinteger(L, 4) != 0) {
+      Gtk4LayerShell::set_margin(window, Gtk4LayerShell::Edge::LEFT, lua_tointeger(L, 4));
+    }
+    if (lua_isinteger(L, 5) != 0) {
+      Gtk4LayerShell::set_margin(window, Gtk4LayerShell::Edge::RIGHT, lua_tointeger(L, 5));
+    }
+    if (lua_isinteger(L, 6) != 0) {
+      Gtk4LayerShell::set_margin(window, Gtk4LayerShell::Edge::BOTTOM, lua_tointeger(L, 6));
+    }
+    lua_pop(L, 4);
+  }
+
+  g_assert(lua_gettop(L) == 2);
+  lua_pop(L, 2);
 
   return 0;
 }
 
 void Window::vfunc_configure(lua_State* const L)
 {
-  spdlog::info("configure window");
-  lua_pushlightuserdata(L, this); // [vin, this]
-  lua_pushcclosure(L, vin_window, 1); // [vin, vin_window]
-  lua_setfield(L, 1, "window"); // [vin]
+  lua_newtable(L);
+  lua_pushinteger(L, static_cast<lua_Integer>(lib::Position::top));
+  lua_setfield(L, 2, "top");
+  lua_pushinteger(L, static_cast<lua_Integer>(lib::Position::left));
+  lua_setfield(L, 2, "left");
+  lua_pushinteger(L, static_cast<lua_Integer>(lib::Position::right));
+  lua_setfield(L, 2, "right");
+  lua_pushinteger(L, static_cast<lua_Integer>(lib::Position::bottom));
+  lua_setfield(L, 2, "bottom");
+  lua_setfield(L, 1, "position");
+
+  lua_pushlightuserdata(L, this);
+  lua_pushcclosure(L, vin_window, 1);
+  lua_setfield(L, 1, "window");
+
   configure_widgets(m_left_modules, L);
   configure_widgets(m_center_modules, L);
   configure_widgets(m_right_modules, L);

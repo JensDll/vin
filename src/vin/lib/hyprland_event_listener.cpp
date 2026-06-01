@@ -107,6 +107,14 @@ void HyprlandEventListener::init_interface(Gio::Initable::Iface* const iface)
 void HyprlandEventListener::Class::init()
 {
   override_vfunc_constructor<HyprlandEventListener>();
+  override_vfunc_dispose<HyprlandEventListener>();
+}
+
+void HyprlandEventListener::vfunc_dispose()
+{
+  m_event_source->destroy();
+  m_event_source = nullptr;
+  parent_vfunc_dispose<HyprlandEventListener>();
 }
 
 RefPtr<Object> HyprlandEventListener::vfunc_constructor(const Type type, const ArrayRef<Object::ConstructParam> params)
@@ -144,10 +152,10 @@ bool HyprlandEventListener::vfunc_init([[maybe_unused]] Gio::Cancellable* const 
 
   const auto channel{ GLib::IOChannel::unix_new(m_socket_fd) };
 
-  const auto event_source{ GLib::io_create_watch(channel, GLib::IOCondition::IN_) };
+  m_event_source = GLib::io_create_watch(channel, GLib::IOCondition::IN_);
 
   vin::glib::source_set_io_callback(
-    event_source, [this](GLib::IOChannel* const the_channel, [[maybe_unused]] const GLib::IOCondition condition) {
+    m_event_source, [this](GLib::IOChannel* const the_channel, [[maybe_unused]] const GLib::IOCondition condition) {
       String line;
       std::size_t length; // NOLINT(cppcoreguidelines-init-variables)
       the_channel->read_line(&line, &length, nullptr, nullptr);
@@ -189,7 +197,7 @@ bool HyprlandEventListener::vfunc_init([[maybe_unused]] Gio::Cancellable* const 
       return G_SOURCE_CONTINUE;
     });
 
-  event_source->attach(m_worker_context);
+  m_event_source->attach(m_worker_context);
 
   return true;
 }

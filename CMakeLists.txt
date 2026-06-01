@@ -11,6 +11,7 @@ include(ccache)
 include(sanitizers)
 include(compile_commands)
 include(CTest)
+include(GNUInstallDirs)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,6 +27,7 @@ target_compile_definitions(
   vin.options
   INTERFACE
     $<$<BOOL:${BUILD_TESTING}>:VIN_BUILD_TESTING>
+    $<$<CONFIG:Release,MinSizeRel>:G_DISABLE_ASSERT>
     JSON_BRACE_INIT_COPY_SEMANTICS
 )
 target_sources(vin.options PUBLIC FILE_SET HEADERS BASE_DIRS "${project_root}/src")

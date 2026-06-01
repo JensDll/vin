@@ -2,6 +2,7 @@
 
 #include <peel/GObject/Type.h>
 #include <peel/GObject/TypeInterface.h>
+#include <peel/Gtk/Widget.h>
 
 namespace vin::lib {
 
@@ -57,5 +58,23 @@ public:
 
 static_assert(sizeof(IPositionable) == sizeof(IPositionable::Iface));
 static_assert(alignof(IPositionable) == alignof(IPositionable::Iface));
+
+template<Position P>
+void add_position_css_class(peel::Gtk::Widget* const widget)
+{
+  widget->remove_css_class("top");
+  widget->remove_css_class("left");
+  widget->remove_css_class("right");
+  widget->remove_css_class("bottom");
+  if constexpr (P == Position::top) {
+    widget->add_css_class("top");
+  } else if constexpr (P == Position::left) {
+    widget->add_css_class("left");
+  } else if constexpr (P == Position::right) {
+    widget->add_css_class("right");
+  } else if constexpr (P == Position::bottom) {
+    widget->add_css_class("bottom");
+  }
+}
 
 } // namespace vin::lib

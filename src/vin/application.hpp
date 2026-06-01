@@ -17,6 +17,7 @@ namespace vin {
 
 class Application final : public peel::Gtk::Application
 {
+private:
   PEEL_SIMPLE_CLASS(Application, peel::Gtk::Application)
 
   friend class peel::Gio::Application;

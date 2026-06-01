@@ -25,6 +25,7 @@ namespace vin {
 
 class Config final : public peel::Gio::Initable
 {
+private:
   PEEL_SIMPLE_CLASS(Config, peel::Gio::Initable)
 
   friend class peel::Gio::Initable;

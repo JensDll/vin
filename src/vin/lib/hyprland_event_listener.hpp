@@ -18,6 +18,7 @@ namespace vin::lib {
 
 class HyprlandEventListener final : public peel::Gio::Initable
 {
+private:
   PEEL_SIMPLE_CLASS(HyprlandEventListener, Initable)
 
   friend class peel::Gio::Initable;
@@ -60,6 +61,7 @@ class HyprlandEventListener final : public peel::Gio::Initable
   int m_socket_fd;
   peel::GLib::MainContext* m_main_context;
   peel::GLib::MainContext* m_worker_context;
+  peel::RefPtr<peel::GLib::Source> m_event_source;
 
 public:
   ~HyprlandEventListener();
@@ -120,6 +122,8 @@ private:
 
   static peel::RefPtr<peel::Object> vfunc_constructor(peel::Type type,
     peel::ArrayRef<peel::Object::ConstructParam> params);
+
+  void vfunc_dispose();
 
   PEEL_PROPERTY(peel::GLib::MainContext, main_context, "main-context")
 

@@ -15,5 +15,5 @@ target_link_libraries(
     vin::options
     vin::deps::spdlog
     vin::deps::peel
-    vin::deps::gio
+    vin::deps::gtk
 )

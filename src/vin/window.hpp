@@ -29,15 +29,15 @@ private:
   friend class lib::IPositionable;
   friend class lib::IConfigurable;
 
+  std::vector<peel::Gtk::Widget*> m_left_modules;
+  std::vector<peel::Gtk::Widget*> m_center_modules;
+  std::vector<peel::Gtk::Widget*> m_right_modules;
+
   peel::Gtk::CenterBox* m_layout;
 
   peel::Gtk::Box* m_left_box;
   peel::Gtk::Box* m_center_box;
   peel::Gtk::Box* m_right_box;
-
-  std::vector<peel::Gtk::Widget*> m_left_modules;
-  std::vector<peel::Gtk::Widget*> m_center_modules;
-  std::vector<peel::Gtk::Widget*> m_right_modules;
 
   peel::GLib::MainContext* m_main_context;
   peel::GLib::MainContext* m_worker_context;

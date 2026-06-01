@@ -21,3 +21,5 @@ target_link_libraries(
     vin::deps::gtk
     vin::deps::gtk_layer_shell
 )
+
+install(TARGETS vin)

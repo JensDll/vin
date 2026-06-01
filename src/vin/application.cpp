@@ -210,7 +210,6 @@ void Application::on_quit([[maybe_unused]] Gio::SimpleAction* const action,
 
 void Application::on_css_changed(Config* const config)
 {
-  spdlog::info("css changed");
   m_css_provider->load_from_file(config->css_file());
 }
 

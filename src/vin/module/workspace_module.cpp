@@ -199,41 +199,25 @@ void WorkspaceModule::vfunc_position(const lib::Position position)
     cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
     m_normal_view->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
     m_menu_button->set_direction(Gtk::ArrowType::DOWN);
-    remove_css_class("top");
-    remove_css_class("left");
-    remove_css_class("right");
-    remove_css_class("bottom");
-    add_css_class("top");
+    lib::add_position_css_class<lib::Position::top>(this);
     break;
   case lib::Position::left:
     cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
     m_normal_view->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
     m_menu_button->set_direction(Gtk::ArrowType::RIGHT);
-    remove_css_class("top");
-    remove_css_class("left");
-    remove_css_class("right");
-    remove_css_class("bottom");
-    add_css_class("left");
+    lib::add_position_css_class<lib::Position::left>(this);
     break;
   case lib::Position::right:
     cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
     m_normal_view->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
     m_menu_button->set_direction(Gtk::ArrowType::LEFT);
-    remove_css_class("top");
-    remove_css_class("left");
-    remove_css_class("right");
-    remove_css_class("bottom");
-    add_css_class("right");
+    lib::add_position_css_class<lib::Position::right>(this);
     break;
   case lib::Position::bottom:
     cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
     m_normal_view->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
     m_menu_button->set_direction(Gtk::ArrowType::UP);
-    remove_css_class("top");
-    remove_css_class("left");
-    remove_css_class("right");
-    remove_css_class("bottom");
-    add_css_class("bottom");
+    lib::add_position_css_class<lib::Position::bottom>(this);
     break;
   }
 }
