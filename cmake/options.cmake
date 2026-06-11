@@ -12,4 +12,4 @@ option(VIN_ENABLE_COVERAGE "Enable coverage" OFF)
 
 option(VIN_ENABLE_LTO "Enable interprocedural optimization" OFF)
 
-option(BUILD_TESTING "Build tests" OFF)
+option(VIN_BUILD_TESTING "Build tests" OFF)

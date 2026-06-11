@@ -75,11 +75,6 @@ public:
       cancellable, error, prop_main_context(), main_context, prop_worker_context(), worker_context);
   }
 
-  static auto singleton()
-  {
-    return peel::Object::create<HyprlandEventListener>();
-  }
-
   PEEL_SIGNAL_CONNECT_METHOD(pin, s_signal_pin)
   PEEL_SIGNAL_CONNECT_METHOD(bell, s_signal_bell)
   PEEL_SIGNAL_CONNECT_METHOD(kill, s_signal_kill)

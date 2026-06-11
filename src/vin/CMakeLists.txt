@@ -7,19 +7,19 @@ add_executable(
   main.cpp
   application.cpp
   window.cpp
+  "${gen_dir}/vin_resource.cpp"
 )
-
 target_link_libraries(
   vin
   PRIVATE
     vin::options
-    vin::module
     vin::lib
+    vin::module
+    vin::deps::gtk_layer_shell
     vin::deps::lua
     vin::deps::spdlog
     vin::deps::peel
     vin::deps::gtk
-    vin::deps::gtk_layer_shell
 )
 
 install(TARGETS vin)

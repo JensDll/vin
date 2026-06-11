@@ -1,7 +1,11 @@
 if(@VIN_BUILD_PEEL@)
-  execute_process(@install_peel@)
+  execute_process(COMMAND @install_peel@)
 endif()
 
 if(@VIN_BUILD_GTK4_LAYER_SHELL@)
-  execute_process(@install_gtk4_layer_shell@)
+  execute_process(COMMAND @install_gtk4_layer_shell@)
+endif()
+
+if(@VIN_BUILD_CATCH2@)
+  execute_process(COMMAND @install_catch2@)
 endif()

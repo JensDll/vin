@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vin/config.hpp"
-#include "vin/lib/hyprland_event_listener.hpp"
 
 #include <peel/class.h>
 #include <peel/Gio/ApplicationFlags.h>
@@ -23,11 +22,14 @@ private:
   friend class peel::Gio::Application;
 
   peel::RefPtr<Config> m_config;
-  peel::RefPtr<lib::HyprlandEventListener> m_hyprland_event_listener;
+
   peel::GLib::MainContext* m_main_context;
   peel::RefPtr<peel::GLib::MainContext> m_worker_context;
+
   peel::RefPtr<peel::Gtk::CssProvider> m_css_provider;
+
   int m_exit_status;
+
   bool m_arg_toggle;
   bool m_arg_quit;
   bool m_arg_version;

@@ -9,8 +9,6 @@
 
 #include <limits>
 #include <string>
-#include <utility>
-#include <vector>
 
 namespace vin::lib {
 
@@ -21,7 +19,6 @@ class HyprlandWorkspace final : public peel::Object
 {
   PEEL_SIMPLE_CLASS(HyprlandWorkspace, peel::Object)
 
-  std::vector<peel::SignalConnection> m_signal_connections;
   std::string m_name;
   std::string m_monitor;
   std::string m_last_window;
@@ -47,49 +44,49 @@ public:
 
   PEEL_PROPERTY(int, id, "id")
 
-  [[nodiscard]] int id() const
+  [[nodiscard]] int get_id() const
   {
     return m_id;
   }
 
   PEEL_PROPERTY(const char*, id_str, "id-str");
 
-  [[nodiscard]] const char* id_str() const
+  [[nodiscard]] const char* get_id_str() const
   {
     return m_id_str.c_str();
   }
 
   PEEL_PROPERTY(const char*, name, "name")
 
-  [[nodiscard]] const char* name() const
+  [[nodiscard]] const char* get_name() const
   {
     return m_name.c_str();
   }
 
   PEEL_PROPERTY(const char*, special_name, "special-name")
 
-  [[nodiscard]] const char* special_name() const
+  [[nodiscard]] const char* get_special_name() const
   {
     return m_name.c_str() + 8;
   }
 
   PEEL_PROPERTY(bool, is_special, "is-special")
 
-  [[nodiscard]] bool is_special() const
+  [[nodiscard]] bool get_is_special() const
   {
     return m_id < 0;
   }
 
   PEEL_PROPERTY(bool, is_normal, "is-normal")
 
-  [[nodiscard]] bool is_normal() const
+  [[nodiscard]] bool get_is_normal() const
   {
-    return !is_special();
+    return !get_is_special();
   }
 
   PEEL_PROPERTY(bool, is_active, "is-active")
 
-  [[nodiscard]] bool is_active() const
+  [[nodiscard]] bool get_is_active() const
   {
     return m_is_active;
   }
@@ -100,34 +97,23 @@ public:
     notify(prop_is_active());
   }
 
-  void register_for_dispose(peel::SignalConnection&& connection)
-  {
-    m_signal_connections.push_back(std::move(connection));
-  }
-
-  void dispose()
-  {
-    m_signal_connections.clear();
-  }
-
 private:
   void init(Class* cls);
 
   static void define_properties(auto& visitor)
   {
-    visitor.prop(prop_id(), WORKSPACE_MIN_ID, WORKSPACE_MAX_ID, 0).get(&HyprlandWorkspace::id);
-    visitor.prop(prop_id_str(), nullptr).get(&HyprlandWorkspace::id_str);
-    visitor.prop(prop_name(), nullptr).get(&HyprlandWorkspace::name);
-    visitor.prop(prop_special_name(), nullptr).get(&HyprlandWorkspace::special_name);
-    visitor.prop(prop_is_special(), false).get(&HyprlandWorkspace::is_special);
-    visitor.prop(prop_is_normal(), false).get(&HyprlandWorkspace::is_normal);
-    visitor.prop(prop_is_active(), false).get(&HyprlandWorkspace::is_active).set(&HyprlandWorkspace::set_is_active);
+    visitor.prop(prop_id(), WORKSPACE_MIN_ID, WORKSPACE_MAX_ID, 0).get(&HyprlandWorkspace::get_id);
+    visitor.prop(prop_id_str(), nullptr).get(&HyprlandWorkspace::get_id_str);
+    visitor.prop(prop_name(), nullptr).get(&HyprlandWorkspace::get_name);
+    visitor.prop(prop_special_name(), nullptr).get(&HyprlandWorkspace::get_special_name);
+    visitor.prop(prop_is_special(), false).get(&HyprlandWorkspace::get_is_special);
+    visitor.prop(prop_is_normal(), false).get(&HyprlandWorkspace::get_is_normal);
+    visitor.prop(prop_is_active(), false).get(&HyprlandWorkspace::get_is_active).set(&HyprlandWorkspace::set_is_active);
   }
 
   void from_json(const nlohmann::json& json)
   {
     m_id_str = fmt::format("{}", json.at("id").get_to(m_id));
-    json.at("name").get_to(m_name);
     json.at("name").get_to(m_name);
     json.at("monitor").get_to(m_monitor);
     json.at("monitorID").get_to(m_monitor_id);

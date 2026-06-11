@@ -11,7 +11,8 @@ enum class Error : unsigned char {
   socket_failed_to_create,
   socket_failed_to_connect,
   socket_failed_to_send_request,
-  socket_failed_to_read_response
+  socket_failed_to_read_response,
+  notify_invalid_type
 };
 
 const static peel::GLib::Quark s_quark{ peel::GLib::Quark("vin-lib") };

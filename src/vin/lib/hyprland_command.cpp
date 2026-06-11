@@ -59,13 +59,7 @@ auto read_all(const int fd, std::string& output)
 std::optional<std::string> HyprlandCommand::send(const std::string& request,
   peel::UniquePtr<peel::GLib::Error>* error) const
 {
-  if (write_all(m_socket_fd, request) == -1) {
-    peel::GLib::set_error(error,
-      s_quark,
-      static_cast<int>(Error::socket_failed_to_send_request),
-      "Failed to send hyprland request '%s' : %s",
-      request.c_str(),
-      strerrordesc_np(errno));
+  if (!send_and_forget(request, error)) {
     return {};
   }
 
@@ -84,7 +78,7 @@ std::optional<std::string> HyprlandCommand::send(const std::string& request,
   return response;
 }
 
-void HyprlandCommand::send_and_forget(const std::string& request, peel::UniquePtr<peel::GLib::Error>* error) const
+bool HyprlandCommand::send_and_forget(const std::string& request, peel::UniquePtr<peel::GLib::Error>* error) const
 {
   if (write_all(m_socket_fd, request) == -1) {
     peel::GLib::set_error(error,
@@ -93,5 +87,8 @@ void HyprlandCommand::send_and_forget(const std::string& request, peel::UniquePt
       "Failed to send hyprland request '%s' : %s",
       request.c_str(),
       strerrordesc_np(errno));
+    return false;
   }
+
+  return true;
 }

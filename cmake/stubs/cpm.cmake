@@ -19,6 +19,7 @@ function(CPMAddPackage)
     EXCLUDE_FROM_ALL
     SOURCE_SUBDIR
     CUSTOM_CACHE_KEY
+    URL_HASH
   )
   set(
     multi_value_args

@@ -10,7 +10,6 @@ include(warnings)
 include(ccache)
 include(sanitizers)
 include(compile_commands)
-include(CTest)
 include(GNUInstallDirs)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -26,7 +25,7 @@ target_compile_options(vin.options INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-march=na
 target_compile_definitions(
   vin.options
   INTERFACE
-    $<$<BOOL:${BUILD_TESTING}>:VIN_BUILD_TESTING>
+    $<$<BOOL:${VIN_BUILD_TESTING}>:VIN_BUILD_TESTING>
     $<$<CONFIG:Release,MinSizeRel>:G_DISABLE_ASSERT>
     JSON_BRACE_INIT_COPY_SEMANTICS
 )
@@ -67,6 +66,10 @@ endif()
 
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
   link_compile_commands()
+endif()
+
+if(VIN_BUILD_TESTING)
+  include(CTest)
 endif()
 
 include(deps)

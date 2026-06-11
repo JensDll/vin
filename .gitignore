@@ -12,6 +12,7 @@ tmp/
 *.received.txt
 *.profdata
 *.profraw
+*.ui
 
 compile_commands.json
 lldbdash.json

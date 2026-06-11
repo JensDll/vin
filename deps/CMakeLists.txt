@@ -13,6 +13,8 @@ option(VIN_BUILD_FMT OFF "Build fmt")
 option(VIN_BUILD_SPDLOG OFF "Build spdlog")
 option(VIN_BUILD_GTK4_LAYER_SHELL OFF "Build gtk4 layer shell")
 option(VIN_BUILD_JSON OFF "Build json")
+option(VIN_BUILD_GLIB OFF "Build json")
+option(VIN_BUILD_CATCH2 OFF "Build Catch2")
 
 set(
   meson_build_type
@@ -50,7 +52,7 @@ if(VIN_BUILD_PEEL)
     BINARY_DIR
   )
 
-  set(install_peel "COMMAND ${MESON_EXE} install -C ${BINARY_DIR}")
+  set(install_peel "${MESON_EXE} install -C ${BINARY_DIR}")
 endif()
 
 if(VIN_BUILD_GTK4_LAYER_SHELL)
@@ -80,7 +82,7 @@ if(VIN_BUILD_GTK4_LAYER_SHELL)
     BINARY_DIR
   )
 
-  set(install_gtk4_layer_shell "COMMAND ${MESON_EXE} install -C ${BINARY_DIR}")
+  set(install_gtk4_layer_shell "${MESON_EXE} install -C ${BINARY_DIR}")
 endif()
 
 set(spdlog_options "SPDLOG_INSTALL ON")
@@ -116,6 +118,38 @@ if(VIN_BUILD_JSON)
     OPTIONS
       "JSON_Install ON"
   )
+endif()
+
+if(VIN_BUILD_CATCH2)
+  CPMAddPackage(
+    NAME catch2
+    URL
+      https://github.com/catchorg/Catch2/archive/refs/tags/v3.15.0.tar.gz
+    URL_HASH
+      SHA512=09df8b291d0c756c492871ce0a4fb5c703162d1364a9864470b227d4d19d9865a0ba5293a5f38d0117cbc7c230f42be35db9f6e0ca5d889dff02f1745807f380
+    DOWNLOAD_ONLY ON
+  )
+
+  # Use external project because it's not installable when added via add_subdirectory
+  ExternalProject_Add(
+    catch2
+    SOURCE_DIR "${catch2_SOURCE_DIR}"
+    CONFIGURE_COMMAND
+      ${CMAKE_COMMAND} -B <BINARY_DIR> -S <SOURCE_DIR> --install-prefix <INSTALL_DIR> -D
+      CMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -D CATCH_INSTALL_DOCS:BOOL=OFF
+    BUILD_COMMAND
+      ${CMAKE_COMMAND} --build <BINARY_DIR>
+    INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+    INSTALL_COMMAND
+      ""
+  )
+
+  ExternalProject_Get_Property(
+    catch2
+    BINARY_DIR
+  )
+
+  set(install_catch2 "${CMAKE_COMMAND} --build ${BINARY_DIR} --target install")
 endif()
 
 configure_file(install.cmake.in install.cmake @ONLY)

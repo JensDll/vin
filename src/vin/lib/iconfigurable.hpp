@@ -15,6 +15,7 @@ private:
   using IConfigure = void (*)(IConfigurable*, lua_State*);
 
   IConfigure m_configure;
+  IConfigure m_unconfigure;
 
 public:
   IConfigurable() = delete;
@@ -34,10 +35,18 @@ public:
     }
   }
 
+  void unconfigure(lua_State* const state)
+  {
+    auto* const iface{ G_TYPE_INSTANCE_GET_INTERFACE(this, peel::Type::of<IConfigurable>(), IConfigurable) };
+    if (iface->m_unconfigure != nullptr) {
+      iface->m_unconfigure(this, state);
+    }
+  }
+
   class Iface : public peel::GObject::TypeInterface
   {
   private:
-    [[maybe_unused]] unsigned char m_filler[sizeof(m_configure)];
+    [[maybe_unused]] unsigned char m_filler[sizeof(m_configure) + sizeof(m_unconfigure)];
 
   public:
     Iface() = delete;
@@ -54,6 +63,16 @@ public:
       iface->m_configure = static_cast<IConfigure>([](IConfigurable* const configurable, lua_State* const state) {
         Derived* const derived{ reinterpret_cast<Derived*>(configurable) };
         derived->Derived::vfunc_configure(state);
+      });
+    }
+
+    template<typename Derived>
+    void override_vfunc_unconfigure()
+    {
+      auto* const iface{ reinterpret_cast<IConfigurable*>(this) };
+      iface->m_unconfigure = static_cast<IConfigure>([](IConfigurable* const configurable, lua_State* const state) {
+        Derived* const derived{ reinterpret_cast<Derived*>(configurable) };
+        derived->Derived::vfunc_unconfigure(state);
       });
     }
   };

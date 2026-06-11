@@ -1,13 +1,14 @@
 #include "vin/application.hpp"
 #include "vin/config.hpp"
-#include "vin/lib/hyprland_event_listener.hpp"
 #include "vin/lib/iconfigurable.hpp"
 #include "vin/window.hpp"
 
+#include <fmt/format.h>
 #include <peel/Gdk/Display.h>
 #include <peel/Gio/ActionGroup.h>
 #include <peel/Gio/SimpleAction.h>
 #include <peel/GLib/Error.h>
+#include <peel/GLib/MainContext.h>
 #include <peel/GLib/MainLoop.h>
 #include <peel/GLib/OptionArg.h>
 #include <peel/GLib/OptionEntry.h>
@@ -17,6 +18,7 @@
 #include <peel/Gtk/Application.h>
 #include <peel/Gtk/StyleContext.h>
 #include <peel/Gtk/Window.h>
+#include <peel/RefPtr.h>
 #include <peel/UniquePtr.h>
 #include <peel/ZTArrayRef.h>
 #include <spdlog/spdlog.h>
@@ -65,7 +67,7 @@ void Application::init([[maybe_unused]] Class* const cls)
     },
   };
 
-  add_main_option_entries(peel::ZTArrayRef<GLib::OptionEntry>::adopt(options.data()));
+  add_main_option_entries(ZTArrayRef<GLib::OptionEntry>::adopt(options.data()));
 }
 
 void Application::Class::init()
@@ -77,20 +79,14 @@ void Application::on_startup([[maybe_unused]] Gio::Application* const app)
 {
   spdlog::set_level(spdlog::level::trace);
 
+  spdlog::info("vin startup");
+
   m_main_context = GLib::MainContext::default_();
   m_worker_context = GLib::MainContext::create();
 
   UniquePtr<GLib::Error> error;
 
   m_config = Config::create(nullptr, &error, m_main_context, m_worker_context);
-
-  if (error) {
-    spdlog::error("{}", error->message);
-    m_exit_status = 1;
-    return;
-  }
-
-  m_hyprland_event_listener = lib::HyprlandEventListener::create(nullptr, &error, m_main_context, m_worker_context);
 
   if (error) {
     spdlog::error("{}", error->message);
@@ -142,27 +138,37 @@ void Application::on_activate([[maybe_unused]] Gio::Application* const app)
   if (m_exit_status > 0 || get_active_window() != nullptr) {
     return;
   }
+
   spdlog::info("vin activate");
-  auto* const window{ Window::create(this, m_main_context, m_worker_context) };
-  m_config->init_state();
-  window->cast<lib::IConfigurable>()->configure(m_config->state());
-  m_config->finish_init_state();
+
   UniquePtr<GLib::Error> error;
+
+  auto* const window{ Window::create(this, m_main_context, m_worker_context) };
+
+  m_config->init_state();
+
+  window->cast<lib::IConfigurable>()->configure(m_config->state());
+
+  m_config->finish_init_state();
+
   if (!m_config->load_config(&error)) {
     spdlog::error("{}", error->message);
+    return;
   }
+
   spdlog::info("showing window");
+
   window->present();
 }
 
-// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
-void Application::on_shutdown([[maybe_unused]] Gio::Application* const app)
+void Application::on_shutdown( // NOLINT(readability-convert-member-functions-to-static)
+  [[maybe_unused]] Gio::Application* const app)
 {
   spdlog::info("vin shutdown");
 }
 
-// NOLINTNEXTLINE(readability-make-member-function-const)
-int Application::on_handle_local_options([[maybe_unused]] Gio::Application* const app,
+int Application::on_handle_local_options( // NOLINT(readability-make-member-function-const)
+  [[maybe_unused]] Gio::Application* const app,
   [[maybe_unused]] GLib::VariantDict* const dict)
 {
   if (m_arg_version) {
@@ -195,17 +201,14 @@ void Application::on_toggle([[maybe_unused]] Gio::SimpleAction* const action,
   [[maybe_unused]] GLib::Variant* const variant)
 {
   auto* const window{ get_active_window() };
-  if (window != nullptr) {
-    window->set_visible(!window->get_visible());
-  } else {
-    spdlog::error("no active window to toggle");
-  }
+  g_assert(window != nullptr);
+  window->set_visible(!window->get_visible());
 }
 
 void Application::on_quit([[maybe_unused]] Gio::SimpleAction* const action,
   [[maybe_unused]] GLib::Variant* const variant)
 {
-  quit();
+  RefPtr<Gtk::Window>::adopt_ref(get_active_window());
 }
 
 void Application::on_css_changed(Config* const config)

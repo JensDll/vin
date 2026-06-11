@@ -13,6 +13,7 @@
 #include <peel/GLib/MainContext.h>
 #include <peel/GLib/Quark.h>
 #include <peel/RefPtr.h>
+#include <spdlog/spdlog.h>
 
 #include <cstddef>
 #include <string_view>
@@ -89,6 +90,7 @@ HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_changefloatin
 
 HyprlandEventListener::~HyprlandEventListener()
 {
+  spdlog::info("finalize hyprland event listener {}", m_socket_fd);
   if (m_socket_fd != -1) {
     close(m_socket_fd);
   }
@@ -112,8 +114,11 @@ void HyprlandEventListener::Class::init()
 
 void HyprlandEventListener::vfunc_dispose()
 {
-  m_event_source->destroy();
-  m_event_source = nullptr;
+  spdlog::info("dispose hyprland event listener");
+  if (m_event_source != nullptr) {
+    m_event_source->destroy();
+    m_event_source = nullptr;
+  }
   parent_vfunc_dispose<HyprlandEventListener>();
 }
 
@@ -130,15 +135,15 @@ RefPtr<Object> HyprlandEventListener::vfunc_constructor(const Type type, const A
   return self;
 }
 
-#define TRY_EMIT_EVENT(name)                                           \
-  if (event.starts_with(#name ">>")) {                                 \
-    m_main_context->invoke([this, event]() {                           \
-      s_signal_##name.emit(this, event.data() + sizeof(#name) + 1);    \
-      /* NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast) */      \
-      GLib::free_sized(const_cast<char*>(event.data()), event.size()); \
-      return G_SOURCE_REMOVE;                                          \
-    });                                                                \
-    return G_SOURCE_CONTINUE;                                          \
+#define TRY_EMIT_EVENT(name)                                               \
+  if (event.starts_with(#name ">>")) {                                     \
+    m_main_context->invoke([this, event]() {                               \
+      s_signal_##name.emit(this, event.data() + sizeof(#name) + 1);        \
+      /* NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast) */          \
+      GLib::free_sized(const_cast<char*>(event.data()), event.size() + 1); \
+      return G_SOURCE_REMOVE;                                              \
+    });                                                                    \
+    return G_SOURCE_CONTINUE;                                              \
   }
 
 bool HyprlandEventListener::vfunc_init([[maybe_unused]] Gio::Cancellable* const cancellable,
@@ -193,7 +198,7 @@ bool HyprlandEventListener::vfunc_init([[maybe_unused]] Gio::Cancellable* const 
       TRY_EMIT_EVENT(destroyworkspacev2)
       TRY_EMIT_EVENT(changefloatingmode)
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-      GLib::free_sized(const_cast<char*>(event.data()), event.size());
+      GLib::free_sized(const_cast<char*>(event.data()), event.size() + 1);
       return G_SOURCE_CONTINUE;
     });
 

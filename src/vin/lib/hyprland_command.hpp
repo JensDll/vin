@@ -43,7 +43,7 @@ public:
   [[nodiscard]] std::optional<std::string> send(const std::string& request,
     peel::UniquePtr<peel::GLib::Error>* error) const;
 
-  void send_and_forget(const std::string& request, peel::UniquePtr<peel::GLib::Error>* error) const;
+  bool send_and_forget(const std::string& request, peel::UniquePtr<peel::GLib::Error>* error) const;
 
   friend void swap(HyprlandCommand& a, HyprlandCommand& b) noexcept;
 };

@@ -5,7 +5,7 @@
 
 #include <peel/class.h>
 #include <peel/Gio/ListModel.h>
-#include <peel/Gio/ListStore.h>
+#include <peel/GLib/MainContext.h>
 #include <peel/property.h>
 #include <peel/RefPtr.h>
 #include <peel/signal.h>
@@ -22,12 +22,19 @@ class HyprlandWorkspaceListModel final : public peel::Gio::ListModel
   PEEL_SIMPLE_CLASS(HyprlandWorkspaceListModel, peel::Gio::ListModel)
 
   friend class peel::Gio::ListModel;
+  friend class peel::Gio::Initable;
 
   using SignalNoSpecial = peel::Signal<HyprlandWorkspaceListModel, void()>;
 
   static SignalNoSpecial s_signal_no_special;
 
   std::map<int, peel::RefPtr<HyprlandWorkspace>> m_items;
+
+  peel::GLib::MainContext* m_main_context;
+  peel::GLib::MainContext* m_worker_context;
+
+  peel::RefPtr<HyprlandEventListener> m_event_listener;
+
   std::size_t m_num_special;
   int m_active_id;
   int m_active_special_id;
@@ -35,9 +42,13 @@ class HyprlandWorkspaceListModel final : public peel::Gio::ListModel
 public:
   ~HyprlandWorkspaceListModel() = default;
 
-  static auto create()
+  static auto create(peel::Gio::Cancellable* const cancellable,
+    peel::UniquePtr<peel::GLib::Error>* const error,
+    peel::GLib::MainContext* const main_context,
+    peel::GLib::MainContext* const worker_context)
   {
-    return peel::Object::create<HyprlandWorkspaceListModel>();
+    return vin::gio::initable_create<HyprlandWorkspaceListModel>(
+      cancellable, error, prop_main_context(), main_context, prop_worker_context(), worker_context);
   }
 
   PEEL_SIGNAL_CONNECT_METHOD(no_special, s_signal_no_special);
@@ -50,17 +61,15 @@ public:
 private:
   void init(Class* cls);
 
-  static void init_type(const peel::Type type)
-  {
-    PEEL_IMPLEMENT_INTERFACE(type, peel::Gio::ListModel);
-  }
+  static void init_type(peel::Type type);
 
-  static void init_interface(peel::Gio::ListModel::Iface* const iface)
-  {
-    iface->override_vfunc_get_item<HyprlandWorkspaceListModel>();
-    iface->override_vfunc_get_item_type<HyprlandWorkspaceListModel>();
-    iface->override_vfunc_get_n_items<HyprlandWorkspaceListModel>();
-  }
+  static void init_interface(peel::Gio::Initable::Iface* iface);
+
+  static void init_interface(peel::Gio::ListModel::Iface* iface);
+
+  bool vfunc_init(peel::Gio::Cancellable* cancellable, peel::UniquePtr<peel::GLib::Error>* error);
+
+  void vfunc_dispose();
 
   static peel::Type vfunc_get_item_type()
   {
@@ -84,6 +93,30 @@ private:
   void on_remove_workspace(HyprlandEventListener* event_listener, const char* data);
 
   void on_active_special(HyprlandEventListener* event_listener, const char* data);
+
+  PEEL_PROPERTY(peel::GLib::MainContext, main_context, "main-context")
+
+  void set_main_context(peel::GLib::MainContext* const main_context)
+  {
+    m_main_context = main_context;
+  }
+
+  PEEL_PROPERTY(peel::GLib::MainContext, worker_context, "worker-context")
+
+  void set_worker_context(peel::GLib::MainContext* const worker_context)
+  {
+    m_worker_context = worker_context;
+  }
+
+  static void define_properties(auto& visitor)
+  {
+    visitor.prop(prop_main_context())
+      .set(&HyprlandWorkspaceListModel::set_main_context)
+      .flags(peel::GObject::ParamFlags::CONSTRUCT_ONLY);
+    visitor.prop(prop_worker_context())
+      .set(&HyprlandWorkspaceListModel::set_worker_context)
+      .flags(peel::GObject::ParamFlags::CONSTRUCT_ONLY);
+  }
 };
 
 } // namespace vin::lib

@@ -9,6 +9,13 @@ find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
+if(VIN_BUILD_TESTING)
+  find_package(Catch2 CONFIG REQUIRED)
+  add_library(vin::deps::catch2 ALIAS Catch2::Catch2)
+  add_library(vin::deps::catch2_with_main ALIAS Catch2::Catch2WithMain)
+  include(Catch)
+endif()
+
 pkg_check_modules(gio2 REQUIRED IMPORTED_TARGET gio-2.0)
 
 pkg_get_variable(glib_compile_schemas gio-2.0 glib_compile_schemas)
@@ -36,6 +43,14 @@ pkg_search_module(
   lua-5.5
   lua>=5.5
   lua<5.6
+)
+
+find_program(
+  BLUEPRINT_COMPILER_EXE
+  REQUIRED
+  NAMES
+    blueprint-compiler
+  DOC "A markup language compiler for GTK user interfaces"
 )
 
 find_program(PEEL_GEN_EXE REQUIRED NAMES peel-gen DOC "Program to generate GTK bindings")

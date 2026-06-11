@@ -12,7 +12,9 @@
         "VIN_BUILD_FMT": true,
         "VIN_BUILD_SPDLOG": true,
         "VIN_BUILD_GTK4_LAYER_SHELL": true,
-        "VIN_BUILD_JSON": true
+        "VIN_BUILD_JSON": true,
+        "VIN_BUILD_CATCH2": true,
+        "CMAKE_POSITION_INDEPENDENT_CODE": true
       }
     },
     {

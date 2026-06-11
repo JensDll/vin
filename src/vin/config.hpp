@@ -89,8 +89,6 @@ public:
   PEEL_SIGNAL_CONNECT_METHOD(css_changed, s_signal_css_changed)
 
 private:
-  void init(Class* cls);
-
   static void init_type(const peel::Type type)
   {
     PEEL_IMPLEMENT_INTERFACE(type, peel::Gio::Initable);

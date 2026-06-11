@@ -1,5 +1,6 @@
 #include "vin/config.hpp"
 #include "vin/error.hpp"
+#include "vin/lib/lua.hpp"
 
 #include <peel/GObject/Object.h>
 #include <peel/Gio/File.h>
@@ -7,6 +8,7 @@
 #include <peel/Gio/FileMonitorEvent.h>
 #include <peel/Gio/FileMonitorFlags.h>
 #include <peel/Gio/Initable.h>
+#include <peel/Gio/Resource.h>
 #include <peel/GLib/Error.h>
 #include <peel/GLib/functions.h>
 #include <peel/GLib/MainContext.h>
@@ -58,8 +60,6 @@ const char* get_home(auto& buffer, UniquePtr<GLib::Error>* const error)
 }
 
 } // namespace
-
-void Config::init([[maybe_unused]] Class* const cls) {}
 
 void Config::Class::init() {}
 
@@ -164,7 +164,9 @@ void Config::init_state()
     lua_close(m_lua);
   }
   m_lua = luaL_newstate();
-  lua_newtable(m_lua); // [vin]
+  lua_newtable(m_lua);
+  lua_pushvalue(m_lua, 1);
+  lua_setfield(m_lua, LUA_REGISTRYINDEX, "vin");
 }
 
 void Config::finish_init_state()
@@ -174,7 +176,7 @@ void Config::finish_init_state()
 
 bool Config::load_config(UniquePtr<GLib::Error>* const error)
 {
-  g_assert(lua_gettop(m_lua) == 0);
+  g_return_val_if_fail(lua_gettop(m_lua) == 0, false);
 
   luaL_openselectedlibs(m_lua, LUA_GLIBK | LUA_STRLIBK | LUA_TABLIBK, 0);
 
@@ -191,8 +193,7 @@ bool Config::load_config(UniquePtr<GLib::Error>* const error)
       static_cast<int>(Error::failed_to_load_config),
       "failed to load config : %s",
       lua_tostring(m_lua, -1));
-    g_assert(lua_gettop(m_lua) == 2);
-    lua_pop(m_lua, 2);
+    VIN_LUA_ASSERT_POP(m_lua, 2);
     return false;
   } // [handler, config_function]
 
@@ -210,15 +211,13 @@ bool Config::load_config(UniquePtr<GLib::Error>* const error)
   if (lua_pcall(m_lua, 0, 0, 1) != LUA_OK) {
     GLib::set_error(error, s_quark, static_cast<int>(Error::failed_to_run_config), lua_tostring(m_lua, -1));
     timeout->destroy();
-    g_assert(lua_gettop(m_lua) == 2);
-    lua_pop(m_lua, 2);
+    VIN_LUA_ASSERT_POP(m_lua, 2);
     return false;
   } // [handler]
 
   timeout->destroy();
 
-  g_assert(lua_gettop(m_lua) == 1);
-  lua_pop(m_lua, 1);
+  VIN_LUA_ASSERT_POP(m_lua, 1);
 
   return true;
 }

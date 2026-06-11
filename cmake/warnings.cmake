@@ -21,6 +21,8 @@ function(configure_warnings target)
     -Wimplicit-fallthrough
     -Wno-cast-function-type
     -Wmisleading-indentation
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-designated-field-initializers>
+    $<$<CXX_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
     $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-cond>
     $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
     $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
