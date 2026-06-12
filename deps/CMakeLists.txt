@@ -15,13 +15,15 @@ option(VIN_BUILD_GTK4_LAYER_SHELL OFF "Build gtk4 layer shell")
 option(VIN_BUILD_JSON OFF "Build json")
 option(VIN_BUILD_GLIB OFF "Build json")
 option(VIN_BUILD_CATCH2 OFF "Build Catch2")
+option(VIN_BUILD_GLIB OFF "Build GLib")
+option(VIN_BUILD_GTK OFF "Build GTK")
 
 set(
   meson_build_type
   $<IF:$<CONFIG:Release,MinSizeRel>,release,$<IF:$<CONFIG:RelWithDebInfo>,debugoptimized,debug>>
 )
 
-if(VIN_BUILD_PEEL OR VIN_BUILD_GTK4_LAYER_SHELL)
+if(VIN_BUILD_PEEL OR VIN_BUILD_GTK4_LAYER_SHELL OR VIN_BUILD_GTK)
   find_program(MESON_EXE REQUIRED NAMES meson DOC "The Meson build system")
 endif()
 
@@ -90,9 +92,10 @@ set(spdlog_options "SPDLOG_INSTALL ON")
 if(VIN_BUILD_FMT)
   CPMAddPackage(
     NAME fmt
-    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-    GIT_TAG 2f18a88e68af42bdda0e5210f80fac07ae756bd6
-    GIT_SHALLOW ON
+    URL
+      https://github.com/fmtlib/fmt/archive/refs/tags/12.1.0.tar.gz
+    URL_HASH
+      SHA512=f0da82c545b01692e9fd30fdfb613dbb8dd9716983dcd0ff19ac2a8d36f74beb5540ef38072fdecc1e34191b3682a8542ecbf3a61ef287dbba0a2679d4e023f2
     OPTIONS
       "FMT_INSTALL ON"
   )
@@ -102,9 +105,10 @@ endif()
 if(VIN_BUILD_SPDLOG)
   CPMAddPackage(
     NAME spdlog
-    GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG 79524ddd08a4ec981b7fea76afd08ee05f83755d
-    GIT_SHALLOW ON
+    URL
+      https://github.com/gabime/spdlog/archive/refs/tags/v1.17.0.tar.gz
+    URL_HASH
+      SHA512=8df117055d19ff21c9c9951881c7bdf27cc0866ea3a4aa0614b2c3939cedceab94ac9abaa63dc4312b51562b27d708cb2f014c68c603fd1c1051d3ed5c1c3087
     OPTIONS
       ${spdlog_options}
   )
@@ -150,6 +154,49 @@ if(VIN_BUILD_CATCH2)
   )
 
   set(install_catch2 "${CMAKE_COMMAND} --build ${BINARY_DIR} --target install")
+endif()
+
+if(VIN_BUILD_GLIB)
+  CPMAddPackage(
+    NAME glib
+    URL
+      https://gitlab.gnome.org/GNOME/glib/-/archive/2.89.0/glib-2.89.0.tar.gz
+    URL_HASH
+      SHA512=22448250034297742c8e6e9a16ccfefa621786257cc141e6e2fc42bf6ef5ea6cc0968b8a49b5f698eca785dd1390d6252cce50758a0c67c128c3151b4a6aef4f
+    DOWNLOAD_ONLY ON
+  )
+endif()
+
+if(VIN_BUILD_GTK)
+  CPMAddPackage(
+    NAME gtk
+    URL
+      https://gitlab.gnome.org/GNOME/gtk/-/archive/4.23.1/gtk-4.23.1.tar.gz
+    URL_HASH
+      SHA512=8a47e020ee0c06f1adbf66ddb9f6f1de9c33485787896951e71d5a4d12810ad471d8ad379697dfe71397ba23015114751f29fafc37f9e6f7c4e184a9077bc96d
+    DOWNLOAD_ONLY ON
+  )
+
+  ExternalProject_Add(
+    gtk
+    SOURCE_DIR "${gtk_SOURCE_DIR}"
+    INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+    CONFIGURE_COMMAND
+      ${MESON_EXE} setup <BINARY_DIR> <SOURCE_DIR> --prefix <INSTALL_DIR> --buildtype
+      ${meson_build_type} -D build-demos=false -D build-testsuite=false -D build-examples=false -D
+      build-tests=false -D introspection=enabled
+    BUILD_COMMAND
+      ${MESON_EXE} compile -C <BINARY_DIR>
+    INSTALL_COMMAND
+      ""
+  )
+
+  ExternalProject_Get_Property(
+    gtk
+    BINARY_DIR
+  )
+
+  set(install_gtk "${MESON_EXE} install -C ${BINARY_DIR}")
 endif()
 
 configure_file(install.cmake.in install.cmake @ONLY)

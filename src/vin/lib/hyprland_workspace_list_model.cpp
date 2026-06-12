@@ -1,6 +1,7 @@
 #include "vin/lib/hyprland_command.hpp"
 #include "vin/lib/hyprland_workspace_list_model.hpp"
 
+#include <fmt/std.h>
 #include <peel/class.h>
 #include <peel/Gio/Initable.h>
 #include <peel/Gio/ListModel.h>
@@ -15,31 +16,21 @@ using namespace vin::lib;
 
 PEEL_CLASS_IMPL(HyprlandWorkspaceListModel, "VinHyprlandWorkspaceListModel", Object)
 
-HyprlandWorkspaceListModel::SignalNoSpecial HyprlandWorkspaceListModel::s_signal_no_special =
-  HyprlandWorkspaceListModel::SignalNoSpecial::create("no_special");
+HyprlandWorkspaceListModel::SignalNewSpecial HyprlandWorkspaceListModel::s_signal_new_special;
+HyprlandWorkspaceListModel::SignalRemoveSpecial HyprlandWorkspaceListModel::s_signal_remove_special;
 
-void HyprlandWorkspaceListModel::init_type(const Type type)
+void HyprlandWorkspaceListModel::Class::init()
 {
-  PEEL_IMPLEMENT_INTERFACE(type, Gio::Initable);
-  PEEL_IMPLEMENT_INTERFACE(type, Gio::ListModel);
+  s_signal_new_special = SignalNewSpecial::create("new-special");
+  s_signal_remove_special = SignalRemoveSpecial::create("remove-special");
+  override_vfunc_dispose<HyprlandWorkspaceListModel>();
 }
 
 void HyprlandWorkspaceListModel::vfunc_dispose()
 {
-  spdlog::info("dispose worksapce list model");
+  spdlog::info("dispose workspace list model {}", fmt::ptr(this));
+  m_event_listener = nullptr;
   parent_vfunc_dispose<HyprlandWorkspaceListModel>();
-}
-
-void HyprlandWorkspaceListModel::init_interface(Gio::Initable::Iface* const iface)
-{
-  iface->override_vfunc_init<HyprlandWorkspaceListModel>();
-}
-
-void HyprlandWorkspaceListModel::init_interface(Gio::ListModel::Iface* const iface)
-{
-  iface->override_vfunc_get_item<HyprlandWorkspaceListModel>();
-  iface->override_vfunc_get_item_type<HyprlandWorkspaceListModel>();
-  iface->override_vfunc_get_n_items<HyprlandWorkspaceListModel>();
 }
 
 bool HyprlandWorkspaceListModel::vfunc_init(Gio::Cancellable* const cancellable, UniquePtr<GLib::Error>* const error)
@@ -95,13 +86,6 @@ bool HyprlandWorkspaceListModel::vfunc_init(Gio::Cancellable* const cancellable,
   return true;
 }
 
-void HyprlandWorkspaceListModel::init([[maybe_unused]] Class* const cls) {}
-
-void HyprlandWorkspaceListModel::Class::init()
-{
-  override_vfunc_dispose<HyprlandWorkspaceListModel>();
-}
-
 namespace {
 int parse_workspace_id(const char* const data)
 {
@@ -153,8 +137,11 @@ void HyprlandWorkspaceListModel::on_new_workspace([[maybe_unused]] HyprlandEvent
       continue;
     }
     const auto workspace{ HyprlandWorkspace::create(value) };
-    m_num_special += static_cast<decltype(m_num_special)>(workspace->get_is_special());
-    const auto& [it, success]{ m_items.try_emplace(workspace->get_id(), workspace) };
+    if (workspace->get_is_special()) {
+      s_signal_new_special.emit(this, ++m_num_special);
+    }
+    spdlog::info("new workspace with id {} {}", id, fmt::ptr(this));
+    const auto& [it, success]{ m_items.try_emplace(id, workspace) };
     g_assert(success);
     items_changed(std::distance(m_items.begin(), it), 0, 1);
     break;
@@ -177,13 +164,11 @@ void HyprlandWorkspaceListModel::on_remove_workspace([[maybe_unused]] HyprlandEv
 
   const auto position{ std::distance(m_items.begin(), it) };
 
-  m_num_special -= static_cast<decltype(m_num_special)>(it->second->get_is_special());
+  if (it->second->get_is_special()) {
+    s_signal_remove_special.emit(this, --m_num_special);
+  }
 
   m_items.erase(it);
-
-  if (m_num_special == 0) {
-    s_signal_no_special.emit(this);
-  }
 
   items_changed(position, 1, 0);
 }
@@ -206,4 +191,22 @@ void HyprlandWorkspaceListModel::on_active_special([[maybe_unused]] HyprlandEven
   if (const auto it{ m_items.find(m_active_special_id = id) }; it != m_items.end()) {
     it->second->set_is_active(true);
   }
+}
+
+void HyprlandWorkspaceListModel::init_type(const Type type)
+{
+  PEEL_IMPLEMENT_INTERFACE(type, Gio::Initable);
+  PEEL_IMPLEMENT_INTERFACE(type, Gio::ListModel);
+}
+
+void HyprlandWorkspaceListModel::init_interface(Gio::Initable::Iface* const iface)
+{
+  iface->override_vfunc_init<HyprlandWorkspaceListModel>();
+}
+
+void HyprlandWorkspaceListModel::init_interface(Gio::ListModel::Iface* const iface)
+{
+  iface->override_vfunc_get_item<HyprlandWorkspaceListModel>();
+  iface->override_vfunc_get_item_type<HyprlandWorkspaceListModel>();
+  iface->override_vfunc_get_n_items<HyprlandWorkspaceListModel>();
 }

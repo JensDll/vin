@@ -23,70 +23,38 @@ using namespace vin::lib;
 
 PEEL_CLASS_IMPL(HyprlandEventListener, "VinHyprlandEventListener", peel::GObject::Object)
 
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_pin =
-  HyprlandEventListener::SignalEvent::create("pin");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_bell =
-  HyprlandEventListener::SignalEvent::create("bell");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_kill =
-  HyprlandEventListener::SignalEvent::create("kill");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_urgent =
-  HyprlandEventListener::SignalEvent::create("urgent");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_submap =
-  HyprlandEventListener::SignalEvent::create("submap");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_minimized =
-  HyprlandEventListener::SignalEvent::create("minimized");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_openlayer =
-  HyprlandEventListener::SignalEvent::create("openlayer");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_lockgroups =
-  HyprlandEventListener::SignalEvent::create("lockgroups");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_fullscreen =
-  HyprlandEventListener::SignalEvent::create("fullscreen");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_closelayer =
-  HyprlandEventListener::SignalEvent::create("closelayer");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_openwindow =
-  HyprlandEventListener::SignalEvent::create("openwindow");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_workspacev2 =
-  HyprlandEventListener::SignalEvent::create("workspacev2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_togglegroup =
-  HyprlandEventListener::SignalEvent::create("togglegroup");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_closewindow =
-  HyprlandEventListener::SignalEvent::create("closewindow");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_activelayout =
-  HyprlandEventListener::SignalEvent::create("activelayout");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_focusedmonv2 =
-  HyprlandEventListener::SignalEvent::create("focusedmonv2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_movewindowv2 =
-  HyprlandEventListener::SignalEvent::create("movewindowv2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_screencastv2 =
-  HyprlandEventListener::SignalEvent::create("screencastv2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_windowtitlev2 =
-  HyprlandEventListener::SignalEvent::create("windowtitlev2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_moveintogroup =
-  HyprlandEventListener::SignalEvent::create("moveintogroup");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_moveoutofgroup =
-  HyprlandEventListener::SignalEvent::create("moveoutofgroup");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_configreloaded =
-  HyprlandEventListener::SignalEvent::create("configreloaded");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_activewindowv2 =
-  HyprlandEventListener::SignalEvent::create("activewindowv2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_monitoraddedv2 =
-  HyprlandEventListener::SignalEvent::create("monitoraddedv2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_renameworkspace =
-  HyprlandEventListener::SignalEvent::create("renameworkspace");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_activespecialv2 =
-  HyprlandEventListener::SignalEvent::create("activespecialv2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_moveworkspacev2 =
-  HyprlandEventListener::SignalEvent::create("moveworkspacev2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_ignoregrouplock =
-  HyprlandEventListener::SignalEvent::create("ignoregrouplock");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_monitorremovedv2 =
-  HyprlandEventListener::SignalEvent::create("monitorremovedv2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_createworkspacev2 =
-  HyprlandEventListener::SignalEvent::create("createworkspacev2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_destroyworkspacev2 =
-  HyprlandEventListener::SignalEvent::create("destroyworkspacev2");
-HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_changefloatingmode =
-  HyprlandEventListener::SignalEvent::create("changefloatingmode");
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_pin;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_bell;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_kill;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_urgent;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_submap;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_minimized;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_openlayer;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_lockgroups;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_fullscreen;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_closelayer;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_openwindow;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_workspacev2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_togglegroup;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_closewindow;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_activelayout;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_focusedmonv2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_movewindowv2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_screencastv2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_windowtitlev2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_moveintogroup;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_moveoutofgroup;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_configreloaded;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_activewindowv2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_monitoraddedv2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_renameworkspace;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_activespecialv2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_moveworkspacev2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_ignoregrouplock;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_monitorremovedv2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_createworkspacev2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_destroyworkspacev2;
+HyprlandEventListener::SignalEvent HyprlandEventListener::s_signal_changefloatingmode;
 
 HyprlandEventListener::~HyprlandEventListener()
 {
@@ -96,18 +64,40 @@ HyprlandEventListener::~HyprlandEventListener()
   }
 }
 
-void HyprlandEventListener::init_type(const Type type)
-{
-  PEEL_IMPLEMENT_INTERFACE(type, Gio::Initable);
-}
-
-void HyprlandEventListener::init_interface(Gio::Initable::Iface* const iface)
-{
-  iface->override_vfunc_init<HyprlandEventListener>();
-}
-
 void HyprlandEventListener::Class::init()
 {
+  s_signal_pin = SignalEvent::create("pin");
+  s_signal_bell = SignalEvent::create("bell");
+  s_signal_kill = SignalEvent::create("kill");
+  s_signal_urgent = SignalEvent::create("urgent");
+  s_signal_submap = SignalEvent::create("submap");
+  s_signal_minimized = SignalEvent::create("minimized");
+  s_signal_openlayer = SignalEvent::create("openlayer");
+  s_signal_lockgroups = SignalEvent::create("lockgroups");
+  s_signal_fullscreen = SignalEvent::create("fullscreen");
+  s_signal_closelayer = SignalEvent::create("closelayer");
+  s_signal_openwindow = SignalEvent::create("openwindow");
+  s_signal_workspacev2 = SignalEvent::create("workspacev2");
+  s_signal_togglegroup = SignalEvent::create("togglegroup");
+  s_signal_closewindow = SignalEvent::create("closewindow");
+  s_signal_activelayout = SignalEvent::create("activelayout");
+  s_signal_focusedmonv2 = SignalEvent::create("focusedmonv2");
+  s_signal_movewindowv2 = SignalEvent::create("movewindowv2");
+  s_signal_screencastv2 = SignalEvent::create("screencastv2");
+  s_signal_windowtitlev2 = SignalEvent::create("windowtitlev2");
+  s_signal_moveintogroup = SignalEvent::create("moveintogroup");
+  s_signal_moveoutofgroup = SignalEvent::create("moveoutofgroup");
+  s_signal_configreloaded = SignalEvent::create("configreloaded");
+  s_signal_activewindowv2 = SignalEvent::create("activewindowv2");
+  s_signal_monitoraddedv2 = SignalEvent::create("monitoraddedv2");
+  s_signal_renameworkspace = SignalEvent::create("renameworkspace");
+  s_signal_activespecialv2 = SignalEvent::create("activespecialv2");
+  s_signal_moveworkspacev2 = SignalEvent::create("moveworkspacev2");
+  s_signal_ignoregrouplock = SignalEvent::create("ignoregrouplock");
+  s_signal_monitorremovedv2 = SignalEvent::create("monitorremovedv2");
+  s_signal_createworkspacev2 = SignalEvent::create("createworkspacev2");
+  s_signal_destroyworkspacev2 = SignalEvent::create("destroyworkspacev2");
+  s_signal_changefloatingmode = SignalEvent::create("changefloatingmode");
   override_vfunc_constructor<HyprlandEventListener>();
   override_vfunc_dispose<HyprlandEventListener>();
 }
@@ -129,8 +119,11 @@ RefPtr<Object> HyprlandEventListener::vfunc_constructor(const Type type, const A
   if (self == nullptr) {
     const auto new_self{ parent_vfunc_constructor<HyprlandEventListener>(type, params) };
     new_self->add_weak_pointer(&self);
+    spdlog::info("new hyprland event listener");
     return self = new_self;
   }
+
+  spdlog::info("reuse hyprland event listener");
 
   return self;
 }
@@ -149,6 +142,8 @@ RefPtr<Object> HyprlandEventListener::vfunc_constructor(const Type type, const A
 bool HyprlandEventListener::vfunc_init([[maybe_unused]] Gio::Cancellable* const cancellable,
   UniquePtr<GLib::Error>* const error)
 {
+  spdlog::info("init hyprland event listener");
+
   m_socket_fd = connect_hyprland<Connect::receive>(error);
 
   if (m_socket_fd == -1) {
@@ -205,4 +200,14 @@ bool HyprlandEventListener::vfunc_init([[maybe_unused]] Gio::Cancellable* const 
   m_event_source->attach(m_worker_context);
 
   return true;
+}
+
+void HyprlandEventListener::init_type(const Type type)
+{
+  PEEL_IMPLEMENT_INTERFACE(type, Gio::Initable);
+}
+
+void HyprlandEventListener::init_interface(Gio::Initable::Iface* const iface)
+{
+  iface->override_vfunc_init<HyprlandEventListener>();
 }

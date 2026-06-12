@@ -14,6 +14,7 @@
         "VIN_BUILD_GTK4_LAYER_SHELL": true,
         "VIN_BUILD_JSON": true,
         "VIN_BUILD_CATCH2": true,
+        "VIN_BUILD_GTK": true,
         "CMAKE_POSITION_INDEPENDENT_CODE": true
       }
     },
@@ -21,7 +22,9 @@
       "name": "debug",
       "inherits": "conf_base",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_LINKER_TYPE": "LLD"
       }
     },
     {

@@ -62,7 +62,7 @@ int connect_hyprland(peel::UniquePtr<peel::GLib::Error>* const error)
 
   *result.out = '\0';
 
-  const int socket_fd{ socket(AF_UNIX, SOCK_STREAM, 0) };
+  const int socket_fd{ ::socket(AF_UNIX, SOCK_STREAM, 0) };
 
   if (socket_fd == -1) {
     peel::GLib::set_error(error,
@@ -80,7 +80,7 @@ int connect_hyprland(peel::UniquePtr<peel::GLib::Error>* const error)
       "failed to connect to %s : %s",
       static_cast<const char*>(addr.sun_path),
       strerrordesc_np(errno));
-    close(socket_fd);
+    ::close(socket_fd);
     return -1;
   }
 

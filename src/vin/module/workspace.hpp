@@ -14,6 +14,8 @@
 #include <peel/Gtk/Orientation.h>
 #include <peel/RefPtr.h>
 
+#include <cstddef>
+
 namespace vin::module {
 
 class Workspace final : public peel::Gtk::Box
@@ -29,6 +31,8 @@ private:
   peel::GLib::MainContext* m_worker_context;
 
   peel::Gtk::ListView* m_normal_view;
+  peel::Gtk::ListView* m_special_view;
+  peel::Gtk::MenuButton* m_menu_button;
 
 public:
   ~Workspace() = default;
@@ -63,9 +67,11 @@ private:
 
   void vfunc_dispose();
 
-  void on_no_special(lib::HyprlandWorkspaceListModel* model);
-
   void vfunc_position(lib::Position position);
+
+  void on_new_special(lib::HyprlandWorkspaceListModel* model, std::size_t count);
+
+  void on_remove_special(lib::HyprlandWorkspaceListModel* model, std::size_t count);
 
   PEEL_PROPERTY(peel::GLib::MainContext, main_context, "main-context")
 

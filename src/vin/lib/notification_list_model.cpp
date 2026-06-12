@@ -13,26 +13,16 @@ using namespace peel;
 
 PEEL_CLASS_IMPL(NotificationListModel, "VinLibNotificationListModel", Object)
 
-guint32 NotificationListModel::s_next_id = 0;
+guint32 NotificationListModel::s_next_id{};
 
-NotificationListModel::SignalEmpty NotificationListModel::s_signal_empty =
-  NotificationListModel::SignalEmpty::create("empty");
-NotificationListModel::SignalEmpty NotificationListModel::s_signal_not_empty =
-  NotificationListModel::SignalEmpty::create("not_empty");
+NotificationListModel::SignalEmpty NotificationListModel::s_signal_empty;
+NotificationListModel::SignalNotEmpty NotificationListModel::s_signal_not_empty;
 
-void NotificationListModel::init_type(const Type type)
+void NotificationListModel::Class::init()
 {
-  PEEL_IMPLEMENT_INTERFACE(type, Gio::ListModel);
+  s_signal_empty = SignalEmpty::create("empty");
+  s_signal_not_empty = SignalNotEmpty::create("not-empty");
 }
-
-void NotificationListModel::init_interface(Gio::ListModel::Iface* const iface)
-{
-  iface->override_vfunc_get_item_type<NotificationListModel>();
-  iface->override_vfunc_get_n_items<NotificationListModel>();
-  iface->override_vfunc_get_item<NotificationListModel>();
-}
-
-void NotificationListModel::Class::init() {}
 
 void NotificationListModel::init([[maybe_unused]] Class* const cls)
 {
@@ -41,7 +31,6 @@ void NotificationListModel::init([[maybe_unused]] Class* const cls)
 }
 
 namespace {
-
 struct NotificationCompare
 {
   static constexpr unsigned int get(const Notification* const value)
@@ -59,13 +48,12 @@ struct NotificationCompare
     return get(a) < get(b);
   }
 };
-
 } // namespace
 
 void NotificationListModel::on_notification([[maybe_unused]] NotificationServer* const server,
   Notification* const notification)
 {
-  if (m_notifications.size() == 0) {
+  if (m_notifications.empty()) {
     s_signal_not_empty.emit(this);
   }
 
@@ -85,4 +73,16 @@ void NotificationListModel::on_notification([[maybe_unused]] NotificationServer*
 
   *it = notification;
   items_changed(std::distance(m_notifications.begin(), it), 0, 0);
+}
+
+void NotificationListModel::init_type(const Type type)
+{
+  PEEL_IMPLEMENT_INTERFACE(type, Gio::ListModel);
+}
+
+void NotificationListModel::init_interface(Gio::ListModel::Iface* const iface)
+{
+  iface->override_vfunc_get_item_type<NotificationListModel>();
+  iface->override_vfunc_get_n_items<NotificationListModel>();
+  iface->override_vfunc_get_item<NotificationListModel>();
 }

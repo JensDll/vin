@@ -144,9 +144,9 @@ int Window::vin_window(lua_State* const L)
 
   lua_getfield(L, 1, "modules");
   if (lua_istable(L, 2) != 0) {
-    configure_modules<ModuleLocation::left>(L, window);
-    configure_modules<ModuleLocation::center>(L, window);
-    configure_modules<ModuleLocation::right>(L, window);
+    create_modules<ModuleLocation::left>(L, window);
+    create_modules<ModuleLocation::center>(L, window);
+    create_modules<ModuleLocation::right>(L, window);
   }
   lua_pop(L, 1);
 

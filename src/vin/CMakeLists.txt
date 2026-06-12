@@ -22,4 +22,11 @@ target_link_libraries(
     vin::deps::gtk
 )
 
+set_source_files_properties(
+  "${gen_dir}/vin_resource.cpp"
+  PROPERTIES
+    SKIP_LINTING
+      ON
+)
+
 install(TARGETS vin)

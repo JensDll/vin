@@ -91,7 +91,7 @@ private:
   void vfunc_position(lib::Position position);
 
   template<ModuleLocation Loc>
-  static void configure_modules(lua_State* const L, Window* const window)
+  static void create_modules(lua_State* const L, Window* const window)
   {
     if constexpr (Loc == ModuleLocation::left) {
       lua_getfield(L, -1, "left");
@@ -120,15 +120,15 @@ private:
 
       switch (Module(lua_tointeger(L, -1))) {
       case Module::time:
-        add_module<Module::time, Loc>(L, &error, i, window);
+        create_module<Module::time, Loc>(L, &error, i, window);
         to_remove[std::to_underlying(Module::time)].widget = nullptr;
         break;
       case Module::worksapce:
-        add_module<Module::worksapce, Loc>(L, &error, i, window);
+        create_module<Module::worksapce, Loc>(L, &error, i, window);
         to_remove[std::to_underlying(Module::worksapce)].widget = nullptr;
         break;
       case Module::notification:
-        add_module<Module::notification, Loc>(L, &error, i, window);
+        create_module<Module::notification, Loc>(L, &error, i, window);
         to_remove[std::to_underlying(Module::worksapce)].widget = nullptr;
         break;
       case Module::NUM:
@@ -148,6 +148,7 @@ private:
     for (std::size_t i{}; i < std::to_underlying(Module::NUM); ++i) {
       const auto& entry{ to_remove[i] };
       if (entry.widget != nullptr && entry.location == Loc) {
+        spdlog::info("remove module");
         window->m_modules[i] = {};
         entry.widget->cast<lib::IConfigurable>()->unconfigure(L);
         window->m_boxes[std::to_underlying(Loc)]->remove(entry.widget);
@@ -158,29 +159,30 @@ private:
   }
 
   template<Module M, ModuleLocation Loc>
-  static void add_module(lua_State* const L,
+  static void create_module(lua_State* const L,
     peel::UniquePtr<peel::GLib::Error>* const error,
     const std::size_t position,
     Window* const window)
   {
     auto& entry{ window->m_modules[std::to_underlying(M)] };
 
-    if (entry.widget != nullptr) {
+    peel::RefPtr<peel::Gtk::Widget> module;
+
+    if (entry.widget == nullptr) {
+      if constexpr (M == Module::worksapce) {
+        module = module::Workspace::create(nullptr, error, window->m_main_context, window->m_worker_context);
+        if (!module) {
+          return;
+        }
+      } else if constexpr (M == Module::time) {
+        module = module::Time::create(window->m_main_context, window->m_worker_context);
+      }
+    } else {
       if (entry.position == position && entry.location == Loc) {
         return;
       }
+      module = entry.widget;
       window->m_boxes[std::to_underlying(entry.location)]->remove(entry.widget);
-    }
-
-    peel::RefPtr<peel::Gtk::Widget> module;
-
-    if constexpr (M == Module::worksapce) {
-      module = module::Workspace::create(nullptr, error, window->m_main_context, window->m_worker_context);
-      if (*error) {
-        return;
-      }
-    } else if constexpr (M == Module::time) {
-      module = module::Time::create(window->m_main_context, window->m_worker_context);
     }
 
     entry = { .widget = module, .position = position, .location = Loc };

@@ -3,7 +3,7 @@
 #include "vin/lib/iconfigurable.hpp"
 #include "vin/window.hpp"
 
-#include <fmt/format.h>
+#include <fmt/base.h>
 #include <peel/Gdk/Display.h>
 #include <peel/Gio/ActionGroup.h>
 #include <peel/Gio/SimpleAction.h>

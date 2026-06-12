@@ -24,9 +24,11 @@ class HyprlandWorkspaceListModel final : public peel::Gio::ListModel
   friend class peel::Gio::ListModel;
   friend class peel::Gio::Initable;
 
-  using SignalNoSpecial = peel::Signal<HyprlandWorkspaceListModel, void()>;
+  using SignalNewSpecial = peel::Signal<HyprlandWorkspaceListModel, void(std::size_t)>;
+  using SignalRemoveSpecial = peel::Signal<HyprlandWorkspaceListModel, void(std::size_t)>;
 
-  static SignalNoSpecial s_signal_no_special;
+  static SignalRemoveSpecial s_signal_new_special;
+  static SignalRemoveSpecial s_signal_remove_special;
 
   std::map<int, peel::RefPtr<HyprlandWorkspace>> m_items;
 
@@ -40,8 +42,6 @@ class HyprlandWorkspaceListModel final : public peel::Gio::ListModel
   int m_active_special_id;
 
 public:
-  ~HyprlandWorkspaceListModel() = default;
-
   static auto create(peel::Gio::Cancellable* const cancellable,
     peel::UniquePtr<peel::GLib::Error>* const error,
     peel::GLib::MainContext* const main_context,
@@ -51,7 +51,8 @@ public:
       cancellable, error, prop_main_context(), main_context, prop_worker_context(), worker_context);
   }
 
-  PEEL_SIGNAL_CONNECT_METHOD(no_special, s_signal_no_special);
+  PEEL_SIGNAL_CONNECT_METHOD(new_special, s_signal_new_special);
+  PEEL_SIGNAL_CONNECT_METHOD(remove_special, s_signal_remove_special);
 
   [[nodiscard]] std::size_t num_special() const
   {
@@ -59,8 +60,6 @@ public:
   }
 
 private:
-  void init(Class* cls);
-
   static void init_type(peel::Type type);
 
   static void init_interface(peel::Gio::Initable::Iface* iface);

@@ -1,10 +1,11 @@
 include_guard()
 
 find_program(
-  CLANG_TIDY
+  CLANG_TIDY_EXE
   REQUIRED
   NAMES
     clang-tidy
+    clang-tidy-23
     clang-tidy-22
     clang-tidy-21
     clang-tidy-20
@@ -12,9 +13,9 @@ find_program(
 
 set(
   command
-  ${CLANG_TIDY}
+  "${CLANG_TIDY_EXE}"
   -p
-  ${project_root}
+  "${project_root}"
   -extra-arg=-std=c++${CMAKE_CXX_STANDARD}
 )
 

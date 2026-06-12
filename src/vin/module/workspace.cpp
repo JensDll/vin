@@ -23,6 +23,7 @@
 #include <peel/signal.h>
 #include <spdlog/spdlog.h>
 
+#include <cstddef>
 #include <utility>
 
 extern "C" {
@@ -41,7 +42,7 @@ void Workspace::Class::init()
 
 void Workspace::vfunc_dispose()
 {
-  spdlog::info("dispose workspace modulde");
+  spdlog::info("dispose workspace module");
   parent_vfunc_dispose<Workspace>();
 }
 
@@ -55,6 +56,9 @@ bool Workspace::vfunc_init(peel::Gio::Cancellable* const cancellable, peel::Uniq
     return false;
   }
 
+  model->connect_new_special(this, &Workspace::on_new_special);
+  model->connect_remove_special(this, &Workspace::on_remove_special);
+
   Type::of<WorkspaceItem>().ensure();
 
   auto is_normal{ Gtk::BoolFilter::create(Gtk::PropertyExpression::create(
@@ -62,13 +66,32 @@ bool Workspace::vfunc_init(peel::Gio::Cancellable* const cancellable, peel::Uniq
   auto normal_model{ Gtk::FilterListModel::create(model, std::move(is_normal)) };
   auto normal_selection{ Gtk::NoSelection::create(std::move(normal_model)) };
 
+  auto is_special{ Gtk::BoolFilter::create(Gtk::PropertyExpression::create(
+    Type::of<lib::HyprlandWorkspace>(), nullptr, lib::HyprlandWorkspace::prop_is_special().get_name())) };
+  auto special_model{ Gtk::FilterListModel::create(model, std::move(is_special)) };
+  auto special_selection{ Gtk::NoSelection::create(std::move(special_model)) };
+
   const auto scope{ Gtk::Builder::CScope::create() };
   auto factory{ Gtk::BuilderListItemFactory::create_from_resource(scope, "/com/doellmann/vin/workspace_list_item.ui") };
 
-  auto normal_view{ Gtk::ListView::create(std::move(normal_selection), std::move(factory)) };
+  auto normal_view{ Gtk::ListView::create(std::move(normal_selection), factory) };
   normal_view->set_name("normal");
   m_normal_view = normal_view;
 
+  auto special_view{ Gtk::ListView::create(std::move(special_selection), std::move(factory)) };
+  special_view->set_name("special");
+  m_special_view = special_view;
+
+  auto popover{ Gtk::Popover::create() };
+  popover->set_child(std::move(special_view));
+  popover->set_has_arrow(false);
+
+  auto menu_button{ Gtk::MenuButton::create() };
+  menu_button->set_sensitive(model->num_special() > 0);
+  menu_button->set_popover(std::move(popover));
+  m_menu_button = menu_button;
+
+  append(std::move(menu_button));
   append(std::move(normal_view));
 
   set_name("workspace-module");
@@ -76,10 +99,18 @@ bool Workspace::vfunc_init(peel::Gio::Cancellable* const cancellable, peel::Uniq
   return true;
 }
 
-void Workspace::on_no_special([[maybe_unused]] lib::HyprlandWorkspaceListModel* const model)
+void Workspace::on_new_special([[maybe_unused]] lib::HyprlandWorkspaceListModel* const model,
+  [[maybe_unused]] const std::size_t count)
 {
-  spdlog::info("no special");
-  // m_menu_button->set_sensitive(false);
+  m_menu_button->set_sensitive(true);
+}
+
+void Workspace::on_remove_special([[maybe_unused]] lib::HyprlandWorkspaceListModel* const model,
+  [[maybe_unused]] const std::size_t count)
+{
+  if (count == 0) {
+    m_menu_button->set_sensitive(false);
+  }
 }
 
 void Workspace::vfunc_position(const lib::Position position)
@@ -88,25 +119,25 @@ void Workspace::vfunc_position(const lib::Position position)
   case lib::Position::top:
     cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
     m_normal_view->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
-    // m_menu_button->set_direction(Gtk::ArrowType::DOWN);
+    m_menu_button->set_direction(Gtk::ArrowType::DOWN);
     lib::add_position_css_class<lib::Position::top>(this);
     break;
   case lib::Position::left:
     cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
     m_normal_view->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
-    // m_menu_button->set_direction(Gtk::ArrowType::RIGHT);
+    m_menu_button->set_direction(Gtk::ArrowType::RIGHT);
     lib::add_position_css_class<lib::Position::left>(this);
     break;
   case lib::Position::right:
     cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
     m_normal_view->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::VERTICAL);
-    // m_menu_button->set_direction(Gtk::ArrowType::LEFT);
+    m_menu_button->set_direction(Gtk::ArrowType::LEFT);
     lib::add_position_css_class<lib::Position::right>(this);
     break;
   case lib::Position::bottom:
     cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
     m_normal_view->cast<Gtk::Orientable>()->set_orientation(Gtk::Orientation::HORIZONTAL);
-    // m_menu_button->set_direction(Gtk::ArrowType::UP);
+    m_menu_button->set_direction(Gtk::ArrowType::UP);
     lib::add_position_css_class<lib::Position::bottom>(this);
     break;
   }

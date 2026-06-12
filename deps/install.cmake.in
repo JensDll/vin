@@ -9,3 +9,7 @@ endif()
 if(@VIN_BUILD_CATCH2@)
   execute_process(COMMAND @install_catch2@)
 endif()
+
+if(@VIN_BUILD_GTK@)
+  execute_process(COMMAND @install_gtk@)
+endif()

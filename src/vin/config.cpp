@@ -28,13 +28,7 @@ extern "C" {
 using namespace vin;
 using namespace peel;
 
-PEEL_CLASS_IMPL(Config, "VinConfig", Object)
-
-Config::SignalCssChanged Config::s_signal_config_changed = Config::SignalCssChanged::create("config_changed");
-Config::SignalCssChanged Config::s_signal_css_changed = Config::SignalCssChanged::create("css_changed");
-
 namespace {
-
 const char* get_home(auto& buffer, UniquePtr<GLib::Error>* const error)
 {
   const auto* const home{ std::getenv("HOME") };
@@ -58,10 +52,18 @@ const char* get_home(auto& buffer, UniquePtr<GLib::Error>* const error)
 
   return pwd.pw_dir;
 }
-
 } // namespace
 
-void Config::Class::init() {}
+PEEL_CLASS_IMPL(Config, "VinConfig", Object)
+
+Config::SignalConfigChanged Config::s_signal_config_changed;
+Config::SignalCssChanged Config::s_signal_css_changed;
+
+void Config::Class::init()
+{
+  s_signal_config_changed = SignalConfigChanged::create("config-changed");
+  s_signal_css_changed = SignalCssChanged::create("css-changed");
+}
 
 bool Config::vfunc_init([[maybe_unused]] Gio::Cancellable* const cancellable, UniquePtr<GLib::Error>* const error)
 {
@@ -205,7 +207,7 @@ bool Config::load_config(UniquePtr<GLib::Error>* const error)
     return G_SOURCE_REMOVE;
   });
 
-  timeout->attach(m_worker_context);
+  // timeout->attach(m_worker_context);
 
   // call the config with the message handler at stack index 1
   if (lua_pcall(m_lua, 0, 0, 1) != LUA_OK) {

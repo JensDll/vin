@@ -170,7 +170,6 @@ int Time::vin_time_module(lua_State* const L)
 
 void Time::vfunc_configure(lua_State* const L)
 {
-  spdlog::info("configure time module {}", lua_gettop(L));
   lua_pushlightuserdata(L, this);
   lua_pushcclosure(L, vin_time_module, 1);
   lua_setfield(L, -2, "time_module");
@@ -179,7 +178,6 @@ void Time::vfunc_configure(lua_State* const L)
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 void Time::vfunc_unconfigure(lua_State* const L)
 {
-  spdlog::info("unconfigure time module {}", lua_gettop(L));
   lua_pushnil(L);
   lua_setfield(L, -2, "time_module");
 }
