@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vin/peel/gio.hpp"
+#include "vin/main_context.hpp"
 
 #include <peel/GObject/Object.h>
 #include <peel/GObject/ParamFlags.h>
@@ -23,18 +23,17 @@ extern "C" {
 
 namespace vin {
 
-class Config final : public peel::Gio::Initable
+class Config final : public peel::Object
 {
-private:
   PEEL_SIMPLE_CLASS(Config, peel::Gio::Initable)
 
   friend class peel::Gio::Initable;
 
-  using SignalCssChanged = peel::Signal<Config, void()>;
-  using SignalConfigChanged = peel::Signal<Config, void()>;
+  using CssChanged = peel::Signal<Config, void()>;
+  using ConfigChanged = peel::Signal<Config, void()>;
 
-  static SignalConfigChanged s_signal_config_changed;
-  static SignalCssChanged s_signal_css_changed;
+  static ConfigChanged s_config_changed;
+  static CssChanged s_css_changed;
 
   peel::RefPtr<peel::Gio::File> m_config_file;
   peel::RefPtr<peel::Gio::File> m_css_file;
@@ -50,26 +49,23 @@ private:
 public:
   ~Config() = default;
 
-  static auto create(peel::Gio::Cancellable* const cancellable,
-    peel::UniquePtr<::peel::GLib::Error>* const error,
-    peel::GLib::MainContext* const main_context,
-    peel::GLib::MainContext* const worker_context)
+  static auto create(const MainContext context)
   {
-    return vin::gio::initable_create<Config>(
-      cancellable, error, prop_main_context(), main_context, prop_worker_context(), worker_context);
+    return peel::Object::create<Config>(
+      prop_main_context(), context.main_context, prop_worker_context(), context.worker_context);
   }
 
-  [[nodiscard]] peel::Gio::File* config_file() const
+  [[nodiscard]] peel::Gio::File* get_config_file() const
   {
     return m_config_file;
   }
 
-  [[nodiscard]] peel::Gio::File* css_file() const
+  [[nodiscard]] peel::Gio::File* get_css_file() const
   {
     return m_css_file;
   }
 
-  [[nodiscard]] lua_State* state() const
+  [[nodiscard]] lua_State* get_state() const
   {
     return m_lua;
   }
@@ -80,29 +76,21 @@ public:
 
   void init_state();
 
-  void finish_init_state();
+  void finish_state();
 
   bool load_config(peel::UniquePtr<peel::GLib::Error>* error);
 
-  PEEL_SIGNAL_CONNECT_METHOD(config_changed, s_signal_config_changed)
+  VIN_MAIN_CONTEXT_PROPERTY
 
-  PEEL_SIGNAL_CONNECT_METHOD(css_changed, s_signal_css_changed)
+  PEEL_SIGNAL_CONNECT_METHOD(config_changed, s_config_changed)
+  PEEL_SIGNAL_CONNECT_METHOD(css_changed, s_css_changed)
 
 private:
-  static void init_type(const peel::Type type)
-  {
-    PEEL_IMPLEMENT_INTERFACE(type, peel::Gio::Initable);
-  }
+  static void init_type(peel::Type type);
 
-  static void init_interface(peel::Gio::Initable::Iface* const iface)
-  {
-    iface->override_vfunc_init<Config>();
-  }
+  static void init_interface(peel::Gio::Initable::Iface* iface);
 
   bool vfunc_init(peel::Gio::Cancellable* cancellable, peel::UniquePtr<peel::GLib::Error>* error);
-
-  static peel::RefPtr<peel::Object> vfunc_constructor(peel::Type type,
-    peel::ArrayRef<peel::Object::ConstructParam> params);
 
   void on_css_changed(peel::Gio::FileMonitor* file_monitor,
     peel::Gio::File* file,
@@ -114,27 +102,7 @@ private:
     peel::Gio::File* other_file,
     peel::Gio::FileMonitor::Event event);
 
-  PEEL_PROPERTY(peel::GLib::MainContext, main_context, "main-context")
-
-  void set_main_context(peel::GLib::MainContext* const main_context)
-  {
-    m_main_context = main_context;
-  }
-
-  PEEL_PROPERTY(peel::GLib::MainContext, worker_context, "worker-context")
-
-  void set_worker_context(peel::GLib::MainContext* const worker_context)
-  {
-    m_worker_context = worker_context;
-  }
-
-  static void define_properties(auto& visitor)
-  {
-    visitor.prop(prop_main_context()).set(&Config::set_main_context).flags(peel::GObject::ParamFlags::CONSTRUCT_ONLY);
-    visitor.prop(prop_worker_context())
-      .set(&Config::set_worker_context)
-      .flags(peel::GObject::ParamFlags::CONSTRUCT_ONLY);
-  }
+  static void define_properties(auto& visitor);
 };
 
 } // namespace vin

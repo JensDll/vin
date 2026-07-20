@@ -1,0 +1,25 @@
+using Gtk 4.0;
+
+template $VinNotificationWindow: Gtk.Window {
+  Gtk.ListView {
+    activate => $on_activate();
+    single-click-activate: true;
+
+    model: Gtk.NoSelection {
+      model: $VinNotificationListModel model {
+        main-context: bind template.main-context;
+        worker-context: bind template.worker-context;
+        empty => $on_empty();
+        not-empty => $on_not_empty();
+      };
+    };
+
+    factory: Gtk.BuilderListItemFactory {
+      template Gtk.ListItem {
+        child: $VinNotificationItem {
+          notification: bind template.item;
+        };
+      }
+    };
+  }
+}

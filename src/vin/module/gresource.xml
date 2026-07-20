@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<gresources>
-  <gresource prefix="/com/doellmann/vin">
-    <file preprocess="xml-stripblanks">workspace_list_item.ui</file>
-    <file preprocess="xml-stripblanks">workspace_item.ui</file>
-  </gresource>
-</gresources>

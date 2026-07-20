@@ -16,8 +16,6 @@ if(VIN_BUILD_TESTING)
   include(Catch)
 endif()
 
-pkg_check_modules(gio2 REQUIRED IMPORTED_TARGET gio-2.0)
-
 pkg_get_variable(glib_compile_schemas gio-2.0 glib_compile_schemas)
 pkg_get_variable(glib_compile_resources gio-2.0 glib_compile_resources)
 
@@ -72,7 +70,7 @@ add_custom_command(
   CODEGEN
   COMMENT "Running peel-gen"
 )
-add_custom_target(peel_gen DEPENDS "${gen_dir_include}/peel")
+add_custom_target(vin.peel.gen DEPENDS "${gen_dir_include}/peel")
 
 add_library(vin.deps.peel INTERFACE IMPORTED)
 target_include_directories(vin.deps.peel INTERFACE "${gen_dir_include}")
@@ -84,7 +82,6 @@ add_library(vin::deps::json ALIAS nlohmann_json::nlohmann_json)
 add_library(vin::deps::fmt ALIAS fmt::fmt)
 add_library(vin::deps::spdlog ALIAS spdlog::spdlog)
 add_library(vin::deps::gtk ALIAS PkgConfig::gtk4)
-add_library(vin::deps::gio ALIAS PkgConfig::gio2)
 add_library(vin::deps::gtk_layer_shell ALIAS PkgConfig::gtk4_layer_shell)
 add_library(vin::deps::lua ALIAS PkgConfig::lua)
 

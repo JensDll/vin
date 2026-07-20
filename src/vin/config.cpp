@@ -1,6 +1,7 @@
 #include "vin/config.hpp"
 #include "vin/error.hpp"
-#include "vin/lib/lua.hpp"
+#include "vin/lua.hpp"
+#include "vin/main_context.hpp"
 
 #include <peel/GObject/Object.h>
 #include <peel/Gio/File.h>
@@ -18,12 +19,6 @@
 
 #include <array>
 #include <cstdlib>
-
-extern "C" {
-#include <lauxlib.h>
-#include <lua.h>
-#include <lualib.h>
-}
 
 using namespace vin;
 using namespace peel;
@@ -56,13 +51,23 @@ const char* get_home(auto& buffer, UniquePtr<GLib::Error>* const error)
 
 PEEL_CLASS_IMPL(Config, "VinConfig", Object)
 
-Config::SignalConfigChanged Config::s_signal_config_changed;
-Config::SignalCssChanged Config::s_signal_css_changed;
+Config::ConfigChanged Config::s_config_changed;
+Config::CssChanged Config::s_css_changed;
 
 void Config::Class::init()
 {
-  s_signal_config_changed = SignalConfigChanged::create("config-changed");
-  s_signal_css_changed = SignalCssChanged::create("css-changed");
+  s_config_changed = ConfigChanged::create("config-changed");
+  s_css_changed = CssChanged::create("css-changed");
+}
+
+void Config::init_type(const peel::Type type)
+{
+  PEEL_IMPLEMENT_INTERFACE(type, peel::Gio::Initable);
+}
+
+void Config::init_interface(peel::Gio::Initable::Iface* const iface)
+{
+  iface->override_vfunc_init<Config>();
 }
 
 bool Config::vfunc_init([[maybe_unused]] Gio::Cancellable* const cancellable, UniquePtr<GLib::Error>* const error)
@@ -100,6 +105,13 @@ bool Config::vfunc_init([[maybe_unused]] Gio::Cancellable* const cancellable, Un
   return true;
 }
 
+VIN_IMPLEMENT_MAIN_CONTEXT_PROPERTY(Config)
+
+void Config::define_properties(auto& visitor)
+{
+  VIN_DEFINE_MAIN_CONTEXT_PROPERTY(Config)
+}
+
 void Config::on_css_changed([[maybe_unused]] Gio::FileMonitor* const file_monitor,
   [[maybe_unused]] Gio::File* const file,
   [[maybe_unused]] Gio::File* const other_file,
@@ -109,7 +121,7 @@ void Config::on_css_changed([[maybe_unused]] Gio::FileMonitor* const file_monito
     return;
   }
   m_main_context->invoke([this]() {
-    s_signal_css_changed.emit(this);
+    s_css_changed.emit(this);
     return G_SOURCE_REMOVE;
   });
 }
@@ -123,7 +135,7 @@ void Config::on_config_changed([[maybe_unused]] Gio::FileMonitor* const file_mon
     return;
   }
   m_main_context->invoke([this]() {
-    s_signal_config_changed.emit(this);
+    s_config_changed.emit(this);
     return G_SOURCE_REMOVE;
   });
 }
@@ -171,7 +183,7 @@ void Config::init_state()
   lua_setfield(m_lua, LUA_REGISTRYINDEX, "vin");
 }
 
-void Config::finish_init_state()
+void Config::finish_state()
 {
   lua_setglobal(m_lua, "vin");
 }

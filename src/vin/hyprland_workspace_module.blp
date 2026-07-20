@@ -1,0 +1,56 @@
+using Gtk 4.0;
+
+$VinHyprlandWorkspaceListModel workspace_model {
+  main-context: bind template.main-context;
+  worker-context: bind template.worker-context;
+}
+
+Gtk.BuilderListItemFactory workspace_factory {
+  template Gtk.ListItem {
+    child: $VinHyprlandWorkspaceItem {
+      workspace: bind template.item;
+    };
+  }
+}
+
+template $VinHyprlandWorkspaceModule: Gtk.Box {
+  Gtk.MenuButton menu_button {
+    sensitive: bind workspace_model.is-any-special;
+
+    popover: Gtk.Popover {
+      has-arrow: false;
+
+      Gtk.ListView special_view {
+        name: "special";
+
+        model: Gtk.NoSelection {
+          model: Gtk.FilterListModel {
+            model: workspace_model;
+
+            filter: Gtk.BoolFilter {
+              expression: expr item as <$VinHyprlandWorkspace>.is-special;
+            };
+          };
+        };
+
+        factory: workspace_factory;
+      }
+    };
+  }
+
+  Gtk.ListView normal_view {
+    name: "normal";
+
+    model: Gtk.NoSelection {
+      model: Gtk.FilterListModel {
+        model: workspace_model;
+
+        filter: Gtk.BoolFilter {
+          expression: expr item as <$VinHyprlandWorkspace>.is-normal;
+        };
+      };
+    };
+
+    factory: workspace_factory;
+  }
+}

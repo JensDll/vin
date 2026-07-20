@@ -1,0 +1,20 @@
+using Gtk 4.0;
+
+template $VinWindow: Gtk.ApplicationWindow {
+  Gtk.CenterBox layout {
+    [start]
+    Gtk.Box start_box {
+      valign: center;
+    }
+
+    [center]
+    Gtk.Box center_box {
+      valign: center;
+    }
+
+    [end]
+    Gtk.Box end_box {
+      valign: center;
+    }
+  }
+}

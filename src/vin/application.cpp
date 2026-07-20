@@ -1,11 +1,11 @@
 #include "vin/application.hpp"
 #include "vin/config.hpp"
-#include "vin/lib/iconfigurable.hpp"
+#include "vin/iconfigurable.hpp"
 #include "vin/window.hpp"
 
-#include <fmt/base.h>
 #include <peel/Gdk/Display.h>
 #include <peel/Gio/ActionGroup.h>
+#include <peel/Gio/Initable.h>
 #include <peel/Gio/SimpleAction.h>
 #include <peel/GLib/Error.h>
 #include <peel/GLib/MainContext.h>
@@ -29,6 +29,11 @@ using namespace vin;
 using namespace peel;
 
 PEEL_CLASS_IMPL(Application, "VinApplication", Gtk::Application)
+
+void Application::Class::init()
+{
+  override_vfunc_local_command_line<Application>();
+}
 
 void Application::init([[maybe_unused]] Class* const cls)
 {
@@ -70,25 +75,20 @@ void Application::init([[maybe_unused]] Class* const cls)
   add_main_option_entries(ZTArrayRef<GLib::OptionEntry>::adopt(options.data()));
 }
 
-void Application::Class::init()
-{
-  override_vfunc_local_command_line<Application>();
-}
-
 void Application::on_startup([[maybe_unused]] Gio::Application* const app)
 {
   spdlog::set_level(spdlog::level::trace);
 
-  spdlog::info("vin startup");
+  spdlog::info("startup");
 
   m_main_context = GLib::MainContext::default_();
   m_worker_context = GLib::MainContext::create();
 
   UniquePtr<GLib::Error> error;
 
-  m_config = Config::create(nullptr, &error, m_main_context, m_worker_context);
+  m_config = Config::create({ .main_context = m_main_context, .worker_context = m_worker_context });
 
-  if (error) {
+  if (!m_config->cast<Gio::Initable>()->init(nullptr, &error)) {
     spdlog::error("{}", error->message);
     m_exit_status = 1;
     return;
@@ -108,7 +108,7 @@ void Application::on_startup([[maybe_unused]] Gio::Application* const app)
   add_action(quit_action);
 
   m_css_provider = Gtk::CssProvider::create();
-  m_css_provider->load_from_file(m_config->css_file());
+  m_css_provider->load_from_file(m_config->get_css_file());
   Gtk::StyleContext::add_provider_for_display(
     Gdk::Display::get_default(), m_css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
@@ -116,40 +116,47 @@ void Application::on_startup([[maybe_unused]] Gio::Application* const app)
 void Application::start_worker_thread()
 {
   GLib::Thread::create("vin_worker", [this]() -> gpointer {
-    spdlog::info("worker thread running");
+    spdlog::info("worker thread is running");
+
     m_worker_context->push_thread_default();
+
     UniquePtr<GLib::Error> error;
+
     m_config->monitor_css(nullptr, &error);
     if (error) {
       spdlog::error("{}", error->message);
     }
+
     m_config->monitor_config(nullptr, &error);
     if (error) {
       spdlog::error("{}", error->message);
     }
-    const auto worker_loop{ GLib::MainLoop::create(m_worker_context, false) };
-    worker_loop->run();
+
+    const auto loop{ GLib::MainLoop::create(m_worker_context, false) };
+    loop->run();
+
     return nullptr;
   });
 }
 
 void Application::on_activate([[maybe_unused]] Gio::Application* const app)
 {
+  spdlog::info("activate");
+
   if (m_exit_status > 0 || get_active_window() != nullptr) {
+    spdlog::info("activate early return {}", m_exit_status);
     return;
   }
 
-  spdlog::info("vin activate");
-
   UniquePtr<GLib::Error> error;
 
-  auto* const window{ Window::create(this, m_main_context, m_worker_context) };
+  auto* const window{ Window::create(this, { .main_context = m_main_context, .worker_context = m_worker_context }) };
 
   m_config->init_state();
 
-  window->cast<lib::IConfigurable>()->configure(m_config->state());
+  window->cast<IConfigurable>()->configure(m_config->get_state());
 
-  m_config->finish_init_state();
+  m_config->finish_state();
 
   if (!m_config->load_config(&error)) {
     spdlog::error("{}", error->message);
@@ -161,14 +168,13 @@ void Application::on_activate([[maybe_unused]] Gio::Application* const app)
   window->present();
 }
 
-void Application::on_shutdown( // NOLINT(readability-convert-member-functions-to-static)
-  [[maybe_unused]] Gio::Application* const app)
+void Application::on_shutdown([[maybe_unused]] Gio::Application* const app)
 {
-  spdlog::info("vin shutdown");
+  spdlog::info("shutdown");
 }
 
-int Application::on_handle_local_options( // NOLINT(readability-make-member-function-const)
-  [[maybe_unused]] Gio::Application* const app,
+// NOLINTNEXTLINE(readability-make-member-function-const)
+int Application::on_handle_local_options([[maybe_unused]] Gio::Application* const app,
   [[maybe_unused]] GLib::VariantDict* const dict)
 {
   if (m_arg_version) {
@@ -208,12 +214,14 @@ void Application::on_toggle([[maybe_unused]] Gio::SimpleAction* const action,
 void Application::on_quit([[maybe_unused]] Gio::SimpleAction* const action,
   [[maybe_unused]] GLib::Variant* const variant)
 {
-  RefPtr<Gtk::Window>::adopt_ref(get_active_window());
+  auto* const window{ get_active_window() };
+  g_assert(window != nullptr);
+  RefTraits<Gtk::Window>::unref(window);
 }
 
 void Application::on_css_changed(Config* const config)
 {
-  m_css_provider->load_from_file(config->css_file());
+  m_css_provider->load_from_file(config->get_css_file());
 }
 
 void Application::on_config_changed([[maybe_unused]] Config* const config)

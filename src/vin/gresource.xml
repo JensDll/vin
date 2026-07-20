@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/com/doellmann/vin">
+    <file preprocess="xml-stripblanks">window.ui</file>
+    <file preprocess="xml-stripblanks">hyprland_workspace_item.ui</file>
+    <file preprocess="xml-stripblanks">hyprland_workspace_module.ui</file>
+    <file preprocess="xml-stripblanks">time_module.ui</file>
+    <file preprocess="xml-stripblanks">notification_window.ui</file>
+    <file preprocess="xml-stripblanks">notification_item.ui</file>
+  </gresource>
+</gresources>
